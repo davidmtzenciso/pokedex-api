@@ -8,11 +8,11 @@ import java.nio.file.Path;
 public final class ProjectClasses {
 
     public static final String ROOT = "com.elatusdev.pokedex";
-    public static final String GENERATED_API_PACKAGE = ROOT + ".web.api";
-    public static final String GENERATED_DTO_PACKAGE = ROOT + ".web.dto";
+    public static final String GENERATED_API_PACKAGE = ROOT + ".contract.api";
+    public static final String GENERATED_DTO_PACKAGE = ROOT + ".contract.dto";
 
-    private static final String GENERATED_API_PATH = "/com/elatusdev/pokedex/web/api/";
-    private static final String GENERATED_DTO_PATH = "/com/elatusdev/pokedex/web/dto/";
+    private static final String GENERATED_API_PATH = "/com/elatusdev/pokedex/contract/api/";
+    private static final String GENERATED_DTO_PATH = "/com/elatusdev/pokedex/contract/dto/";
 
     // one import for sixteen rules — ClassFileImporter walks the tree on every call otherwise
     private static final JavaClasses PRODUCTION = new ClassFileImporter()

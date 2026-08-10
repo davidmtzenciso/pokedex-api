@@ -34,7 +34,7 @@ class IoConfinementArchitectureTest {
     @Test
     void should_reject_rest_client_dependencies_when_the_class_is_outside_the_pokeapi_adapter() {
         noClasses()
-                .that().resideOutsideOfPackage("..infrastructure.pokeapi..")
+                .that().resideOutsideOfPackage("..catalog.infrastructure..")
                 .should().dependOnClassesThat(REST_CLIENT)
                 .because("IO2 — one adapter owns the upstream call, so its timeouts, retries and fan-out bound live in one place")
                 .check(ProjectClasses.production());

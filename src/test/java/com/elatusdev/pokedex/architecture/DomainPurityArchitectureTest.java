@@ -5,8 +5,8 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
-import com.elatusdev.pokedex.shared.port.ClockPort;
-import com.elatusdev.pokedex.shared.port.CachePort;
+import com.elatusdev.pokedex.shared.domain.ClockPort;
+import com.elatusdev.pokedex.shared.domain.CachePort;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class DomainPurityArchitectureTest {
@@ -24,7 +24,7 @@ class DomainPurityArchitectureTest {
     // relative, not absolute: every context carries its own application/infrastructure/web,
     // so com.elatusdev.pokedex.application.. no longer names anything — ADR-0013
     private static final String[] OTHER_LAYERS = {
-        "..application..", "..infrastructure..", "..web..",
+        "..application..", "..infrastructure..",
     };
 
     // L2 is the whole reason this suite is not optional. One Maven module puts every

@@ -230,8 +230,8 @@
             <configuration>
               <inputSpec>${project.basedir}/src/main/resources/openapi/pokedex-api.yaml</inputSpec>
               <generatorName>spring</generatorName>
-              <apiPackage>com.elatusdev.pokedex.web.api</apiPackage>
-              <modelPackage>com.elatusdev.pokedex.web.dto</modelPackage>
+              <apiPackage>com.elatusdev.pokedex.contract.api</apiPackage>
+              <modelPackage>com.elatusdev.pokedex.contract.dto</modelPackage>
               <modelNameSuffix>DTO</modelNameSuffix>
               <!-- default interface methods return 501 for operations a stream has not
                    implemented yet, which is what lets three streams share one contract.
@@ -319,8 +319,8 @@
         <configuration>
           <!-- generated code is not our code; gating it produces noise, not signal -->
           <excludes>
-            <exclude>com/elatusdev/pokedex/web/api/**</exclude>
-            <exclude>com/elatusdev/pokedex/web/dto/**</exclude>
+            <exclude>com/elatusdev/pokedex/contract/api/**</exclude>
+            <exclude>com/elatusdev/pokedex/contract/dto/**</exclude>
           </excludes>
         </configuration>
         <executions>

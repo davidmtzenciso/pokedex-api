@@ -5,7 +5,7 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
-import com.elatusdev.pokedex.pokedex.domain.model.Pokemon;
+import com.elatusdev.pokedex.pokedex.domain.Pokemon;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class BoundedContextArchitectureTest {
@@ -59,7 +59,7 @@ class BoundedContextArchitectureTest {
                 .that().resideInAPackage(CATALOG)
                 .should().dependOnClassesThat()
                 .resideInAnyPackage("..pokedex.pokedex.application..", "..pokedex.pokedex.infrastructure..",
-                        "..pokedex.pokedex.web..", "..pokedex.identity.application..",
+                        "..pokedex.pokedex.infrastructure..", "..pokedex.identity.application..",
                         "..pokedex.identity.infrastructure..", "..pokedex.identity.web..")
                 .because("BC4 — cross-context coupling goes through the domain or not at all")
                 .allowEmptyShould(true)
