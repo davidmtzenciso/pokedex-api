@@ -6,7 +6,7 @@
 | **Parent** | [WF-000 Foundation](../workflows/WF-000-foundation.md) |
 | **Objective contribution** | The 16 structural rules the POM cannot express |
 | **Estimate** | S |
-| **Status** | not started |
+| **Status** | done |
 
 ## Objective
 
@@ -143,11 +143,32 @@ implements a generated `*Api`.
 
 ---
 
+## Convention — `allowEmptyShould`
+
+This work unit ships **before** the code most of its rules govern, which is the point. A rule
+whose subject set is empty makes ArchUnit fail with "rule failed to check any classes", so
+the rules over packages that later phases populate carry `.allowEmptyShould(true)`.
+
+That is **not** a step on the suppression ladder — the rule is still enforced, and it still
+fails the moment a matching class appears. What discharges the risk of a permanently vacuous
+rule is the deliberate-violation proof below, which is mandatory precisely because
+`allowEmptyShould` would otherwise hide a typo'd package pattern forever.
+
+`L2` and the rules over `..domain..` and `..domain.exception..` carry **no**
+`allowEmptyShould` — those packages are populated today, so an empty result there is a real
+failure.
+
 ## Exit Criteria
 
-- [ ] All 16 rules pass
-- [ ] **No `FreezingArchRule`, no allowlists, no `@ArchIgnore`**
-- [ ] Each rule demonstrated to fail on a deliberate violation, then reverted
+- [x] All 16 rules pass — 23 assertions across 9 `*ArchitectureTest` classes
+- [x] **No `FreezingArchRule`, no allowlists, no `@ArchIgnore`**
+- [x] Each rule demonstrated to fail on a deliberate violation, then reverted
+
+Two rules name types that are not on the classpath until a later work unit — `IO1`
+(`EntityManager`, `JdbcTemplate`, `JpaRepository`, arriving in WU-US03-A) and `SB-PA4`
+(`SecurityFilterChain`, arriving in WU-AUTH-B). Both were proven against **stub types
+declared at those exact fully-qualified names**, so the matcher string itself is exercised
+rather than assumed.
 
 ```bash
 mvn -B test -Dtest='*ArchitectureTest'
