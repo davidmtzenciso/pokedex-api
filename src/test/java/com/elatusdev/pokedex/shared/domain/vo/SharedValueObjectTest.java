@@ -205,7 +205,7 @@ class SharedValueObjectTest {
 
         @Test
         void should_carry_the_value() {
-            assertThat(PokeApiId.of(25).value()).isEqualTo(25));
+            assertThat(PokeApiId.of(25).value()).isEqualTo(25);
         }
     }
 }

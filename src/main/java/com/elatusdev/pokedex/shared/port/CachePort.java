@@ -12,4 +12,8 @@ public interface CachePort {
     <T> void put(String key, T value, Duration ttl);
 
     void evict(String key);
+
+    // a synced record must not stay shadowed by a cached page it no longer belongs in, and
+    // the pages it appears in are not knowable from the record alone
+    void evictByPrefix(String prefix);
 }

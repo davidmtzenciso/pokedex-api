@@ -16,7 +16,7 @@ verify: ## every gate: hygiene, compile, arch, unit, component, coverage, contra
 build: ## compile only
 	$(MVN) compile
 
-test: ## fast inner loop — unit + WireMock + ArchUnit
+test: ## fast inner loop — unit + ArchUnit. WireMock adapter tests are *ComponentTest, so they run in verify
 	$(MVN) test
 
 arch: ## the structural suite alone

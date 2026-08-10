@@ -125,7 +125,7 @@ class PokedexValueObjectTest {
 
         @Test
         void should_carry_the_value() {
-            assertThat(PokemonId.of(7).value()).isEqualTo(7L));
+            assertThat(PokemonId.of(7).value()).isEqualTo(7L);
         }
     }
 }

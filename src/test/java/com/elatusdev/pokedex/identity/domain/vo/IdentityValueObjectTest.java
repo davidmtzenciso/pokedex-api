@@ -75,7 +75,7 @@ class IdentityValueObjectTest {
 
         @Test
         void should_carry_the_value() {
-            assertThat(UserId.of(7).value()).isEqualTo(7L));
+            assertThat(UserId.of(7).value()).isEqualTo(7L);
         }
     }
 }
