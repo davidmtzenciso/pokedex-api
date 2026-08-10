@@ -129,9 +129,24 @@ Never string-concatenate a query. Parameterised always (OWASP A03).
 
 ## Transactions
 
-The use case is the boundary. Repositories are never `@Transactional` themselves — that
-would make each call its own transaction and quietly break atomicity across a use case that
-does two writes.
+The use case is the boundary. It is the only place `@Transactional` expresses a *policy* —
+these writes succeed or fail together.
+
+The repository **adapter** is also `@Transactional`, and that is not a second boundary. With
+the default `REQUIRED` propagation it joins the use case's transaction whenever there is one,
+so a use case doing two writes is still atomic; it opens its own only when called outside
+one. The earlier rule here said adapters are never transactional "because that would make
+each call its own transaction" — which is what `REQUIRES_NEW` does, not `REQUIRED`.
+
+It has to be transactional, because the adapter returns **domain** objects. Mapping a
+`PokemonDataModel` reads six lazy child collections, and `SimpleJpaRepository.findById` has
+already committed and detached the entity by the time it returns. Without a transaction
+spanning the mapping, every aggregate the adapter hands back throws
+`LazyInitializationException` the first time anyone asks it for its abilities — an object
+that cannot answer questions about itself is not a domain object.
+
+`REQUIRES_NEW` on an adapter is still wrong, and so is `@Transactional` on a Spring Data
+interface.
 
 No remote I/O inside a transaction. Fetch from upstream first, then open the transaction to
 persist.

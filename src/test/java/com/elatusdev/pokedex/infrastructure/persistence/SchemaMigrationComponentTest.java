@@ -145,8 +145,12 @@ class SchemaMigrationComponentTest {
         assertThat(deleteRule).isEqualTo("SET NULL");
     }
 
+    // WU-US03-A E2 says "@Version on both roots"; the ERD gives version to POKEMON alone and
+    // the domain User carries none. A curator with no version to send back cannot have one
+    // checked, so a column on users would be the appearance of optimistic locking, not the
+    // fact of it — and the difference only shows up as a lost update nobody notices.
     @Test
-    void should_carry_a_version_column_on_both_aggregate_roots() {
+    void should_carry_a_version_column_on_pokemon_alone_among_the_roots() {
         List<String> versioned = jdbc.queryForList(
                 """
                 SELECT table_name FROM information_schema.columns
@@ -155,7 +159,7 @@ class SchemaMigrationComponentTest {
                 """,
                 String.class);
 
-        assertThat(versioned).containsExactly("pokemon", "users");
+        assertThat(versioned).containsExactly("pokemon");
     }
 
     @Test
