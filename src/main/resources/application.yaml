@@ -8,9 +8,15 @@ spring:
   # the default in-memory user prints a generated password to stdout at boot, which is a
   # credential in a log line (AC-AUTH-4). Authentication here is the JWT filter, not a
   # UserDetailsService, so the autoconfiguration has nothing to contribute either.
+  #
+  # Boot 4 moved this class from org.springframework.boot.autoconfigure.security.servlet to
+  # org.springframework.boot.security.autoconfigure. The old name does not fail the boot —
+  # it is silently ignored, so the exclusion did nothing and the password was logged on
+  # every start. ApplicationContextLoadsComponentTest now asserts the bean is absent,
+  # because a name in a YAML file is not evidence that anything was excluded.
   autoconfigure:
     exclude:
-      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+      - org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
   data:
     redis:
       host: ${POKEDEX_REDIS_HOST:localhost}

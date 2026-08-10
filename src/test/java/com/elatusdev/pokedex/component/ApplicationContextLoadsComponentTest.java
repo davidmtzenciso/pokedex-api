@@ -36,4 +36,16 @@ class ApplicationContextLoadsComponentTest {
         assertThat(context.getEnvironment().getProperty("server.servlet.context-path"))
                 .isEqualTo("/api");
     }
+
+    // AC-AUTH-4 — the default in-memory user prints "Using generated security password: …"
+    // to stdout at boot, which is a credential in a log line. The exclusion that suppresses
+    // it names a class that Boot 4 MOVED, and a wrong name there is silently ignored rather
+    // than failing the boot: the exclusion did nothing for weeks and every start logged a
+    // password. Asserting the bean is absent is the only version of this check that has
+    // ever been evidence.
+    @Test
+    void should_register_no_default_user_details_service() {
+        assertThat(context.getBeansOfType(org.springframework.security.core.userdetails.UserDetailsService.class))
+                .isEmpty();
+    }
 }
