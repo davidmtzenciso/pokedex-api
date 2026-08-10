@@ -97,6 +97,14 @@ class ListLocalPokemonUseCaseTest {
     }
 
     @Test
+    void should_accept_the_size_exactly_at_the_lower_bound() {
+        when(query.findPage(NONE, 0, 1)).thenReturn(List.of());
+        when(query.count(NONE)).thenReturn(0L);
+
+        assertThat(useCase().list(NONE, 0, 1).size()).isEqualTo(1);
+    }
+
+    @Test
     void should_reject_a_size_below_one() {
         assertThatThrownBy(() -> useCase().list(NONE, 0, 0)).isInstanceOf(InvalidPaginationException.class);
 
