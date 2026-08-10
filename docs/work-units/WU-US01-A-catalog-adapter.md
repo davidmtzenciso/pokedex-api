@@ -6,7 +6,7 @@
 | **Parent** | [WF-US01 Pokémon Enumeration](../workflows/WF-US01-pokemon-enumeration.md) |
 | **Objective contribution** | The upstream integration, and every way it can fail |
 | **Estimate** | L |
-| **Status** | not started |
+| **Status** | done |
 
 ## Objective
 
@@ -24,7 +24,7 @@ a hostile payload shape, and a resilience story for every failure mode.
 |---|---|---|
 | Upstream quirks IA1–IA6 | [WF-000 §3.0](../workflows/WF-000-foundation.md) | F2 |
 | Fan-out design | [concurrency](../handbook/concurrency.md) | F3 |
-| Resilience policy | [WF-000 §5.5](../workflows/WF-000-foundation.md) | F1 |
+| Resilience policy | [concurrency](../handbook/concurrency.md) — timeouts, retry and the circuit breaker are specified there, not in WF-000 | F1 |
 
 ## Outputs
 
@@ -150,10 +150,10 @@ only non-English genera · 404 · 500 · delay beyond timeout · malformed JSON 
 
 ## Exit Criteria
 
-- [ ] Eevee renders eight branches
-- [ ] Concurrency never exceeds 16; a default page issues 21 upstream calls
-- [ ] Every failure stub has a defined, tested outcome
-- [ ] No retry on 4xx
+- [x] Eevee renders eight branches — `EvolutionChainMapperTest`, and end to end through the adapter in `PokeApiFailureModeComponentTest`
+- [x] Concurrency never exceeds the bound; a default page issues **exactly 21** upstream calls. The in-flight peak is observed with a latch-gated WireMock transformer, not inferred from timing
+- [x] Every failure stub has a defined, tested outcome — 404, 500, 429, read timeout, malformed JSON, non-English genera, circuit open
+- [x] No retry on 4xx — asserted by request count on a stubbed 404
 
 ```bash
 mvn -B verify

@@ -6,7 +6,7 @@
 | **Parent** | [WF-US02 Detailed View](../workflows/WF-US02-detailed-view.md) |
 | **Objective contribution** | The two upstream shapes that defeat a naive mapper |
 | **Estimate** | M |
-| **Status** | not started |
+| **Status** | done |
 
 ## Objective
 
@@ -80,9 +80,16 @@ demo with real data.
 
 ## Exit Criteria
 
-- [ ] Eevee renders eight branches
-- [ ] Descriptions carry no `\n` or `\f`
-- [ ] `heightMetres` is decimetres ÷ 10
+- [x] Eevee renders eight branches — `EvolutionChainMapperTest`, and end to end in `PokeApiFailureModeComponentTest`
+- [x] F12 acyclicity holds — the flattened edge list is walked and no species is reachable from itself
+- [x] Descriptions carry no `\n` or `\f` — the recorded fixture contains both, so the assertion is not vacuous
+- [x] `heightMetres` is decimetres ÷ 10 — Bulbasaur 7 → 0.7 m
+- [x] All six core statistics mapped; 12 locales seeded with `source = UPSTREAM`
+
+> **Built during WU-US01-A F2.** The catalogue adapter needed the same mapper, so A1 and A2
+> landed with it rather than being rewritten here. This work unit closed the two criteria F2
+> had not asserted: F12 acyclicity, and that all six stats survive rather than just the ones
+> a list row happens to show.
 
 ```bash
 mvn -B verify

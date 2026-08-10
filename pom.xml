@@ -133,6 +133,10 @@
       <version>${jjwt.version}</version>
       <scope>runtime</scope>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
 
     <!-- generated *Api interfaces need these at compile time -->
     <dependency>
@@ -169,6 +173,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.wiremock</groupId>
+      <artifactId>wiremock-standalone</artifactId>
+      <version>${wiremock.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-testcontainers</artifactId>
       <scope>test</scope>
@@ -177,7 +187,7 @@
 
   <build>
     <plugins>
-      <!-- source hygiene: copyright header, no Javadoc, no NOSONAR -->
+      <!-- source hygiene: no file headers, no Javadoc, no NOSONAR -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
@@ -223,7 +233,11 @@
               <apiPackage>com.elatusdev.pokedex.web.api</apiPackage>
               <modelPackage>com.elatusdev.pokedex.web.dto</modelPackage>
               <modelNameSuffix>DTO</modelNameSuffix>
-              <generateSupportingFiles>false</generateSupportingFiles>
+              <!-- default interface methods return 501 for operations a stream has not
+                   implemented yet, which is what lets three streams share one contract.
+                   They need ApiUtil, so that one supporting file is generated and no other. -->
+              <generateSupportingFiles>true</generateSupportingFiles>
+              <supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
               <generateApiTests>false</generateApiTests>
               <generateModelTests>false</generateModelTests>
               <configOptions>
@@ -234,7 +248,6 @@
                 <useSpringBoot3>true</useSpringBoot3>
                 <openApiNullable>false</openApiNullable>
                 <useOptional>false</useOptional>
-                <skipDefaultInterface>true</skipDefaultInterface>
               </configOptions>
             </configuration>
           </execution>
