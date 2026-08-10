@@ -66,6 +66,16 @@ class ValueObjectTest {
         }
 
         @Test
+        void should_not_equal_a_value_of_another_type() {
+            assertThat(new PokemonName("bulbasaur")).isNotEqualTo("bulbasaur");
+        }
+
+        @Test
+        void should_not_equal_a_different_name() {
+            assertThat(new PokemonName("bulbasaur")).isNotEqualTo(new PokemonName("ivysaur"));
+        }
+
+        @Test
         void should_reject_a_blank_name() {
             assertThatThrownBy(() -> new PokemonName("   "))
                     .isInstanceOf(InvalidPokemonDataException.class)
@@ -104,6 +114,12 @@ class ValueObjectTest {
         @Test
         void should_collapse_runs_of_whitespace() {
             assertThat(new Description("a\n\n\nb").value()).isEqualTo("a b");
+        }
+
+        @Test
+        void should_reject_a_description_over_two_thousand_characters() {
+            assertThatThrownBy(() -> new Description("d".repeat(2001)))
+                    .isInstanceOf(InvalidPokemonDataException.class);
         }
 
         @Test
@@ -154,6 +170,16 @@ class ValueObjectTest {
         void should_reject_a_tag_over_thirty_characters() {
             assertThatThrownBy(() -> new Tag("x".repeat(31)))
                     .isInstanceOf(InvalidPokemonDataException.class);
+        }
+
+        @Test
+        void should_not_equal_a_value_of_another_type() {
+            assertThat(new Tag("starter")).isNotEqualTo("starter");
+        }
+
+        @Test
+        void should_not_equal_a_tag_with_a_different_label() {
+            assertThat(new Tag("starter")).isNotEqualTo(new Tag("legendary"));
         }
 
         @Test
@@ -272,6 +298,17 @@ class ValueObjectTest {
         @Test
         void should_reject_blank() {
             assertThatThrownBy(() -> new Category(" ")).isInstanceOf(InvalidPokemonDataException.class);
+        }
+
+        @Test
+        void should_accept_a_category_of_exactly_sixty_characters() {
+            assertThat(new Category("c".repeat(60)).value()).hasSize(60);
+        }
+
+        @Test
+        void should_reject_a_category_over_sixty_characters() {
+            assertThatThrownBy(() -> new Category("c".repeat(61)))
+                    .isInstanceOf(InvalidPokemonDataException.class);
         }
     }
 

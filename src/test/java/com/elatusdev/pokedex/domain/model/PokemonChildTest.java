@@ -72,6 +72,18 @@ class PokemonChildTest {
                     .isInstanceOf(InvalidPokemonDataException.class)
                     .hasMessageContaining("effort");
         }
+
+        @Test
+        void should_reject_a_blank_name() {
+            assertThatThrownBy(() -> new PokemonStat(" ", 45, 0))
+                    .isInstanceOf(InvalidPokemonDataException.class)
+                    .hasMessageContaining("stat name");
+        }
+
+        @Test
+        void should_accept_a_zero_base_value() {
+            assertThat(new PokemonStat("speed", 0, 0).baseValue()).isZero();
+        }
     }
 
     @Nested
@@ -90,6 +102,13 @@ class PokemonChildTest {
             assertThatThrownBy(() -> new PokemonType("poison", 0))
                     .isInstanceOf(InvalidPokemonDataException.class)
                     .hasMessageContaining("slot");
+        }
+
+        @Test
+        void should_reject_a_blank_name() {
+            assertThatThrownBy(() -> new PokemonType(" ", 1))
+                    .isInstanceOf(InvalidPokemonDataException.class)
+                    .hasMessageContaining("type name");
         }
     }
 
@@ -123,6 +142,13 @@ class PokemonChildTest {
         @Test
         void should_reject_a_blank_value() {
             assertThatThrownBy(() -> new LocalizedName("es", " ", NameSource.UPSTREAM))
+                    .isInstanceOf(InvalidPokemonDataException.class)
+                    .hasMessageContaining("localized name");
+        }
+
+        @Test
+        void should_reject_a_value_over_one_hundred_and_twenty_characters() {
+            assertThatThrownBy(() -> new LocalizedName("es", "n".repeat(121), NameSource.UPSTREAM))
                     .isInstanceOf(InvalidPokemonDataException.class)
                     .hasMessageContaining("localized name");
         }

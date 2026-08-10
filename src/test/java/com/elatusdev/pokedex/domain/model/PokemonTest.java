@@ -186,6 +186,16 @@ class PokemonTest {
         }
 
         @Test
+        void should_leave_the_sync_timestamp_alone_when_the_target_state_is_not_replicated() {
+            Pokemon pokemon = Pokemon.pending(PokeApiId.of(1), bulbasaur());
+
+            pokemon.transitionTo(ReplicationState.FAILED, SYNCED_AT);
+
+            assertThat(pokemon.replicationState()).isEqualTo(ReplicationState.FAILED);
+            assertThat(pokemon.syncedAt()).isEmpty();
+        }
+
+        @Test
         void should_link_a_draft_to_upstream_when_moving_off_draft() {
             Pokemon draft = Pokemon.draft(bulbasaur());
 
@@ -193,6 +203,93 @@ class PokemonTest {
 
             assertThat(draft.replicationState()).isEqualTo(ReplicationState.PENDING);
             assertThat(draft.pokeApiId()).contains(PokeApiId.of(1));
+        }
+    }
+
+    // The single edge on which upstream data reaches a persisted row: STALE -> {SYNCED,
+    // CUSTOMIZED}, chosen by whether the curator has written anything. The exhaustive
+    // property over field combinations is PokemonMergePolicyTest in WU-US03-B.
+    @Nested
+    class ReplicationMergeTest {
+
+        private static Pokemon stale() {
+            Pokemon pokemon = synced();
+            pokemon.transitionTo(ReplicationState.STALE, SYNCED_AT);
+            return pokemon;
+        }
+
+        private static ReplicatedFields ivysaur() {
+            return new ReplicatedFields(
+                    new PokemonName("ivysaur"),
+                    Optional.of(new Category("Seed Pokemon")),
+                    Mass.ofHectograms(130),
+                    Height.ofDecimetres(10),
+                    142,
+                    Sprite.NONE,
+                    Optional.empty(),
+                    List.of(),
+                    List.of(),
+                    List.of(),
+                    List.of(),
+                    List.of());
+        }
+
+        @Test
+        void should_enter_pending_when_a_sync_is_requested_for_an_upstream_id() {
+            Pokemon pokemon = Pokemon.pending(PokeApiId.of(4), bulbasaur());
+
+            assertThat(pokemon.replicationState()).isEqualTo(ReplicationState.PENDING);
+            assertThat(pokemon.pokeApiId()).contains(PokeApiId.of(4));
+            assertThat(pokemon.id()).isEmpty();
+            assertThat(pokemon.version()).isZero();
+        }
+
+        @Test
+        void should_become_synced_when_the_curator_has_written_nothing() {
+            Pokemon pokemon = stale();
+            Instant resyncedAt = SYNCED_AT.plusSeconds(86_400);
+
+            pokemon.replaceReplicated(ivysaur(), resyncedAt);
+
+            assertThat(pokemon.replicationState()).isEqualTo(ReplicationState.SYNCED);
+            assertThat(pokemon.replicated().name()).isEqualTo(new PokemonName("ivysaur"));
+            assertThat(pokemon.syncedAt()).contains(resyncedAt);
+        }
+
+        @Test
+        void should_become_customized_when_the_curator_has_written_something() {
+            Pokemon pokemon = stale();
+            pokemon.assignRegion(Region.KANTO);
+
+            pokemon.replaceReplicated(ivysaur(), SYNCED_AT.plusSeconds(86_400));
+
+            assertThat(pokemon.replicationState()).isEqualTo(ReplicationState.CUSTOMIZED);
+        }
+
+        @Test
+        void should_leave_every_proprietary_field_untouched_when_replicated_data_is_replaced() {
+            Pokemon pokemon = stale();
+            pokemon.assignRegion(Region.KANTO);
+            pokemon.annotate(new Notes("verify the sprite"));
+            pokemon.curateBy(UserId.of(7));
+            pokemon.addTag(new Tag("starter"));
+            ProprietaryFields before = pokemon.proprietary();
+
+            pokemon.replaceReplicated(ivysaur(), SYNCED_AT.plusSeconds(86_400));
+
+            assertThat(pokemon.proprietary()).isEqualTo(before);
+            assertThat(pokemon.proprietary().region()).contains(Region.KANTO);
+            assertThat(pokemon.proprietary().notes()).contains(new Notes("verify the sprite"));
+            assertThat(pokemon.curatedBy()).contains(UserId.of(7));
+            assertThat(pokemon.tags()).containsExactly(new Tag("starter"));
+        }
+
+        @Test
+        void should_reject_replacing_replicated_data_from_a_state_that_is_not_stale() {
+            Pokemon pokemon = synced();
+
+            assertThatThrownBy(() -> pokemon.replaceReplicated(ivysaur(), SYNCED_AT))
+                    .isInstanceOf(IllegalStateTransitionException.class);
         }
     }
 
@@ -272,6 +369,23 @@ class PokemonTest {
             pokemon.addTag(new Tag("starter"));
 
             assertThat(pokemon.proprietary().isEmpty()).isFalse();
+        }
+
+        @Test
+        void should_not_be_empty_when_a_curator_is_assigned() {
+            assertThat(ProprietaryFields.none().withCurator(UserId.of(7)).isEmpty()).isFalse();
+        }
+
+        @Test
+        void should_not_be_empty_when_a_curator_authored_name_is_present() {
+            ProprietaryFields fields = new ProprietaryFields(
+                    Optional.empty(),
+                    Optional.empty(),
+                    Optional.empty(),
+                    List.of(),
+                    List.of(new LocalizedName("es", "Bulbasaur", NameSource.CURATOR)));
+
+            assertThat(fields.isEmpty()).isFalse();
         }
 
         @Test
