@@ -1,4 +1,3 @@
-# Copyright (c) 2026 ElatusDev
 # make verify is the gate of record. There is no pipeline — see docs/guides/build-and-test.md.
 SHELL := bash
 .DEFAULT_GOAL := help

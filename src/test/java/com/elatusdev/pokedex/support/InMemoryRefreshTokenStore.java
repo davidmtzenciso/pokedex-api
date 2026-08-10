@@ -10,10 +10,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.stereotype.Component;
 
-// TEST SCOPE ONLY, and temporary — see InMemoryUserStore. No work unit currently owns a
-// RefreshTokenRepository adapter: WU-US03-A names only JpaUserRepositoryAdapter, while the
-// refresh_tokens table sits in that stream's V1 schema. That gap is reported, not papered
-// over: this fake exists so the auth branch can prove its behaviour end to end.
+// TEST SCOPE ONLY, and temporary. No work unit owns a RefreshTokenRepository adapter:
+// WU-US03-A delivered JpaUserRepositoryAdapter and a refresh_tokens table — with
+// ux_refresh_tokens_jti and an index on (user_id, family_id) — but no adapter behind it.
+// The table is there; the code to reach it is not.
+//
+// This fake exists so the auth stream can prove rotation and family revocation end to end
+// rather than leave them unverified. It is deliberately NOT @Primary, so the day a
+// JpaRefreshTokenRepositoryAdapter lands, the duplicate bean is a loud startup failure
+// instead of a fake quietly outranking the real one. DELETE IT THEN.
+//
+// Until then, component tests here prove auth behaviour, NOT persistence: nothing rolls
+// back, and no test in this class exercises the unique constraint or the cascade.
 @Component
 public class InMemoryRefreshTokenStore implements RefreshTokenRepository {
 

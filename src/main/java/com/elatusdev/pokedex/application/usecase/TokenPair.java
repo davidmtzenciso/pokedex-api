@@ -1,4 +1,3 @@
-// Copyright (c) 2026 ElatusDev
 package com.elatusdev.pokedex.application.usecase;
 
 import com.elatusdev.pokedex.domain.model.IssuedToken;

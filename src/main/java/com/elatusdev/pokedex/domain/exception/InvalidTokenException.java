@@ -1,4 +1,3 @@
-// Copyright (c) 2026 ElatusDev
 package com.elatusdev.pokedex.domain.exception;
 
 // One message for every way a token can be unacceptable — absent, malformed, wrongly signed,

@@ -1,4 +1,3 @@
-// Copyright (c) 2026 ElatusDev
 package com.elatusdev.pokedex.domain.model;
 
 // Carried as a claim and checked on verify. Without it an access token is accepted at
