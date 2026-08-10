@@ -6,6 +6,27 @@ spring:
   application:
     name: pokedex-api
 
+  datasource:
+    url: ${POKEDEX_DB_URL:jdbc:postgresql://postgres:5432/pokedex}
+    username: ${POKEDEX_DB_USER:pokedex}
+    # no default on purpose — a credential in a tracked file is a credential in the image (java:S6437)
+    password: ${POKEDEX_DB_PASSWORD:}
+
+  jpa:
+    # Flyway owns the schema; Hibernate only checks that the mapping still matches it
+    hibernate:
+      ddl-auto: validate
+    # a lazy collection initialised by a serialiser is a query outside the transaction boundary
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
 springdoc:
   # The contract is authored, not derived. Annotation scanning would build a second
   # document that drifts from the file we publish, and AC1c would fail the moment it did.
