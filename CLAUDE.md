@@ -113,14 +113,21 @@ See [ADR-0013](docs/adr/0013-bounded-context-packages.md).
 
 ## Where things live
 
+Everything below is relative to `com.elatusdev.pokedex.{context}`, where `{context}` is one
+of `catalog`, `pokedex`, `identity`, `shared`.
+
 | Thing | Path | Enforced by |
 |---|---|---|
-| Aggregates, value objects, policies, ports | `domain/…/domain/{model,vo,policy,port,exception}` | `DomainPurityArchitectureTest` |
-| Use cases — one class per operation | `application/…/application/usecase` | `N1` |
-| JPA entities and Spring Data repositories | `infrastructure/…/persistence` | `N3`, `N4`, `IO1` |
-| PokeAPI client | `infrastructure/…/pokeapi` | `IO2` |
-| Controllers implementing generated `*Api` | `web/…/web/controller` | `N2`, `OA1` |
+| Aggregates, value objects, policies, ports | `{context}/domain/{model,vo,policy,port,exception}` | `L2`, `N3`, `N5` |
+| Use cases — one class per operation | `{context}/application/usecase` | `N1` |
+| JPA entities and Spring Data repositories | `pokedex/infrastructure/persistence` | `N3`, `N4`, `IO1` |
+| PokeAPI client | `catalog/infrastructure/pokeapi` | `IO2` |
+| Redis cache adapter | `catalog/infrastructure/cache` | `IO1` |
+| Token issuer, hasher, session store | `identity/infrastructure/security` | — |
+| Controllers implementing generated `*Api` | `{context}/web/controller` | `N2`, `OA1` |
+| `GlobalExceptionHandler`, `SecurityConfig` | `shared/web/{error,config}` | `SB-PA4` |
 | The OpenAPI contract | `src/main/resources/openapi/pokedex-api.yaml` | `OA1` |
+| Generated `*Api` and `*DTO` | `target/generated-sources/…` — **never edited, never committed** | `OA1` |
 | Flyway migrations | `src/main/resources/db/migration` | Fails fast on checksum drift |
 | ArchUnit rules | `src/test/java/com/elatusdev/pokedex/architecture` | Itself |
 
@@ -156,6 +163,7 @@ See [ADR-0013](docs/adr/0013-bounded-context-packages.md).
 - `RestClient` for HTTP. `RestTemplate`, `WebClient`, and WebFlux are forbidden.
 - `@ConfigurationProperties` records for config. No scattered `@Value`.
 - Optimistic locking with `@Version` by default. No remote I/O inside a transaction.
+- **Flyway owns the schema; `ddl-auto` is `validate`.** Never a value that writes — it cannot generate the partial unique index, so the schema would be silently wrong. An applied migration is never edited; add a corrective one ([ADR-0012](docs/adr/0012-flyway-versioned-migrations.md)).
 - Every list endpoint takes `Pageable`. Default size **10**, maximum **100**. A larger `size` is a 400 `INVALID_PAGINATION` — **reject, never silently clamp**.
 - Bind to request DTOs, never to entities — mass assignment is OWASP A08.
 
@@ -192,7 +200,7 @@ See [ADR-0008](docs/adr/0008-openapi-contract-distribution.md).
 | Unit | `*Test.java` | Surefire | Alongside the package under test |
 | Component | `*ComponentTest.java` | Failsafe + Testcontainers | `src/test/java/.../component` |
 | Architecture | `*ArchitectureTest.java` | Surefire | `src/test/java/.../architecture` |
-| Mutation | PIT, `make mutation` | pitest-maven | `domain` (85%), `application` (75%) |
+| Mutation | PIT, `make mutation` | pitest-maven | `*.domain.*` (85%), `*.application.*` (75%) — the wildcard is the context |
 | API E2E | Newman collection | Newman | `e2e/` |
 
 Rules:
@@ -210,19 +218,20 @@ Rules:
 
 New code must clear all of these before a push:
 
-| Gate | Threshold |
-|---|---|
-| Line coverage | ≥ 90% |
-| Branch coverage | ≥ 90% |
-| Mutation score — `domain` | ≥ 85% (`make mutation`, not in the commit loop) |
-| Mutation score — `application` | ≥ 75% |
-| Duplication (new code) | ≤ 1% |
-| New blocker / critical / major violations | 0 |
-| New code smells | ≤ 5 |
-| Security hotspots reviewed | 100% |
-| HIGH/CRITICAL CVEs | 0 |
-| Secrets detected (`gitleaks`) | 0 |
-| ArchUnit rules | all pass, none frozen |
+| Gate | Threshold | Enforced by |
+|---|---|---|
+| Line coverage | ≥ 90% | JaCoCo `check` — fails the build |
+| Branch coverage | ≥ 90% | JaCoCo `check` — fails the build |
+| Mutation score — every `..domain..` | ≥ 85% | PIT, `make mutation` — deliberate, not in the commit loop |
+| Mutation score — every `..application..` | ≥ 75% | PIT |
+| ArchUnit rules | all 22 pass, none frozen | `mvn -B test -Dtest='*ArchitectureTest'` |
+| Source hygiene | no file header, no Javadoc, no `// NOSONAR` | `scripts/check-source-hygiene.sh`, bound to `validate` |
+| Secrets | none | `gitleaks detect`, run locally |
+
+> **Duplication ratios, code smells, security-hotspot review, and CVE counts are deliberately
+> absent.** They need a hosted analysis server this project does not have, so they were
+> deleted rather than restated as aspirations — [verification gates](docs/diagrams/verification-gates.md).
+> A threshold nobody measures is cheap talk.
 
 ### Suppression ladder
 
@@ -260,7 +269,10 @@ docker compose up --build                  # postgres + redis + api
 | Bulbasaur weighs 69 kg | `weight` is hectograms, `height` is decimetres |
 | Description renders with visible artefacts | `flavor_text` contains literal `\n` and `\f` |
 | Eevee shows one evolution | The chain is a recursive tree, not a list — 8 branches |
-| Coverage gate fails with zero new issues | Editing one line inside pre-existing duplicated code counts against `new_duplicated_lines_density` |
+| `BC3` fails on a class you thought was generic | It reached into a context. The shared kernel depends on nothing — move it into the context that needs it |
+| An ArchUnit layer rule passes but asserts nothing | It was written against an **absolute** package (`com.elatusdev.pokedex.application..`). Layers live inside contexts — use `..application..` |
+| `make mutation` reports success suspiciously fast | PIT's `targetClasses` matched no classes. The glob is `com.elatusdev.pokedex.*.domain.*` — the wildcard is the context |
+| A class "disappeared" after a refactor | Check the import before assuming deletion. The tree is context-first, so `domain.model.Pokemon` is now `pokedex.domain.model.Pokemon` |
 | `make verify` fails at the component tier | Testcontainers needs a running Docker daemon. The build fails rather than skips, deliberately |
 | A consumer breaks after a spec change | It pinned an older contract version. Release, and let it adopt deliberately |
 
