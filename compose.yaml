@@ -1,0 +1,50 @@
+# The backing services, per WF-000 §8.
+#
+# There is deliberately no `api` service yet. That one needs a Dockerfile, and the Dockerfile
+# is WU-999-A's — adding a half-considered one here would make `make up` look finished while
+# skipping hadolint, the non-root user, and the readiness healthcheck that work unit exists
+# to get right. `make up` already runs `docker compose up --build`, so the api service drops
+# in later with no change to the command anyone types.
+#
+# Ports are published to the host on purpose: until there is an api image, the way you run
+# the application is from your IDE or `mvn spring-boot:run`, and that reaches Postgres over
+# localhost rather than over the compose network. See the note in README on POKEDEX_DB_URL.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: pokedex
+      POSTGRES_USER: pokedex
+      # dev-only, and named so nobody mistakes it for a credential. Production supplies
+      # POSTGRES_PASSWORD from the environment and never from a tracked file (java:S6437).
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pokedex-dev-only}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      # -d and -U both matter: pg_isready reports the *server* is up before the database
+      # exists, and Flyway then fails against a database that is not there yet.
+      test: ["CMD-SHELL", "pg_isready -U pokedex -d pokedex"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - redisdata:/data
+
+volumes:
+  pgdata:
+  redisdata:
