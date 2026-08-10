@@ -133,6 +133,15 @@ class GetPokemonDetailUseCaseTest {
 
     // blank is malformed input, not "no such Pokemon" — the contract declares minLength 1,
     // so this is a 400 and never a 404
+    // null is a separate branch from blank, and @ValueSource cannot express it — which is
+    // exactly why the null check survived mutation while the blank cases were covered
+    @Test
+    void should_reject_an_absent_reference_rather_than_dereference_it() {
+        assertThatThrownBy(() -> useCase.detail(null))
+                .isInstanceOf(InvalidPokemonDataException.class)
+                .hasMessageContaining("idOrName");
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"", "   "})
     void should_reject_a_blank_reference_as_invalid_rather_than_absent(String reference) {

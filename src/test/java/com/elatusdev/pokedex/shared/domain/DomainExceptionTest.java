@@ -102,4 +102,17 @@ class DomainExceptionTest {
 
         assertThat(thrown).hasMessage("mass must be positive, was 0").hasNoCause();
     }
+
+    // page() and size() exist so the advice can echo what the caller actually sent back to
+    // them. Nothing asserted either, so both accessors were NO_COVERAGE under mutation —
+    // the exception could have returned zero for both and every test would still pass.
+    @Test
+    void should_carry_the_rejected_page_and_size_it_was_built_with() {
+        InvalidPaginationException rejected =
+                new InvalidPaginationException("size must be between 1 and 100", 7, 500);
+
+        assertThat(rejected.page()).isEqualTo(7);
+        assertThat(rejected.size()).isEqualTo(500);
+        assertThat(rejected.getMessage()).isEqualTo("size must be between 1 and 100");
+    }
 }

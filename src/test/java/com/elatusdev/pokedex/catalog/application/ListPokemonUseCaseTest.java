@@ -94,6 +94,16 @@ class ListPokemonUseCaseTest {
                 .hasMessageContaining("100");
     }
 
+    // the lower bound needs pinning as much as the upper one: only the maximum was
+    // asserted, so a mutant shifting `size < 1` to `size < 2` survived — and it would have
+    // rejected every single-row page a client asked for
+    @Test
+    void should_accept_the_smallest_valid_size() {
+        when(catalog.fetchPage(0, 1)).thenReturn(new CatalogPage(List.of(row("bulbasaur")), 1351));
+
+        assertThat(useCase.list(0, 1).rows()).hasSize(1);
+    }
+
     @Test
     void should_accept_the_maximum_size() {
         when(catalog.fetchPage(0, 100)).thenReturn(new CatalogPage(List.of(row("bulbasaur")), 1351));
