@@ -12,7 +12,7 @@ graph TD
     CAT["catalog<br/>upstream read-through<br/>US01 · US02"]
     POK["pokedex<br/>curated collection<br/>US03 · US04"]
     IDN["identity<br/>users · tokens · sessions<br/>WF-AUTH"]
-    SHR["shared kernel<br/>replicated VOs · CachePort · ClockPort<br/>DEPENDS ON NOTHING"]
+    SHR["shared kernel<br/>domain/ replicated VOs · port/ technical ports<br/>DEPENDS ON NOTHING"]
 
     POK -->|"UserId only"| IDN
     CAT --> SHR
@@ -47,6 +47,7 @@ graph TD
 - **`domain` has no outgoing edges.** It references no Spring, JPA, Jakarta, or Jackson type. Note what this is *not*: a classpath property. One module means every dependency is on every package's classpath, so `import org.springframework...` in a domain class **compiles fine**. `L2` is what fails it, seconds later at test time.
 - **`infrastructure` depends on `application`, not the reverse.** Adapters implement ports the domain owns. Dependency inversion at every boundary.
 - **`shared` depends on nothing** (`BC3`). A kernel that may depend on a context re-couples every context through the back door.
+- **`shared/port` sits outside `domain`.** `CachePort` and `ClockPort` name no domain type, so filing them under `domain` would claim they are domain objects. They are still ports — `L5` keeps them framework-free.
 - **Contexts meet through `domain` or not at all** (`BC4`). Importing another context's use case couples you to how it works rather than to what it means.
 - **The architecture tests are test sources, not a module.** They walk `target/classes`, which is how one suite asserts rules spanning every context and layer.
 

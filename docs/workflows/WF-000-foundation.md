@@ -533,6 +533,7 @@ Secrets never live in `*.properties` (`java:S6437`, `docker:S6472`). The dev key
 | **CI1** — Constructor injection | No field `@Autowired`, no field `@Value`, no setter injection | Yes | `ConstructionArchitectureTest` |
 | **SB-PA4** — Filter-chain fallthrough | Every `@Bean SecurityFilterChain` terminates with `.anyRequest()` | Yes | `SecurityConfigArchitectureTest` |
 | **OA1** — Contract confinement | Every `@RestController` implements a generated `*Api` interface | Yes | `OpenApiContractConfinementArchitectureTest` |
+| **L5** — Technical port purity | A port in `shared/port` names no framework type | Yes | `DomainPurityArchitectureTest` |
 | **BC1** — Identity isolation | `identity` depends on neither `catalog` nor `pokedex` | Yes | `BoundedContextArchitectureTest` |
 | **BC2** — Catalogue isolation | `catalog` does not depend on `identity` | Yes | `BoundedContextArchitectureTest` |
 | **BC3** — Kernel purity | `shared` depends on **no** context at all | Yes | `BoundedContextArchitectureTest` |
@@ -590,7 +591,7 @@ proprietary field is byte-identical to its prior value** (F7).
 **AC6 — Coverage**: JaCoCo on merged Surefire and Failsafe data reports ≥ 90% line and
 ≥ 90% branch; the build **fails** below either.
 
-**AC9 — Architecture**: All 22 ArchUnit rules pass, none frozen, none allowlisted.
+**AC9 — Architecture**: All 23 ArchUnit rules pass, none frozen, none allowlisted.
 
 **AC9b — No file headers**: No `.java` outside generated sources contains a copyright or licence banner.
 

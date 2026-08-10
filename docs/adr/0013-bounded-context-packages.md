@@ -41,7 +41,9 @@ com.elatusdev.pokedex
 ├── pokedex/     the curated local collection — US03, US04
 ├── identity/    users, tokens, sessions — WF-AUTH
 └── shared/      the shared kernel
-    └── domain/{vo,exception,port} · web/{error,config}
+    ├── domain/{vo,exception}     ← domain objects only
+    ├── port/                     ← technical ports (see below)
+    └── web/{error,config}
 ```
 
 with each context carrying `domain/` · `application/` · `infrastructure/` · `web/`.
@@ -61,11 +63,48 @@ loses the invariants the aggregate exists to hold.
 
 **`shared` is a kernel, not a utilities package.** It holds what more than one context
 speaks natively: the replicated value objects (`PokemonName`, `Mass`, `Height`, `Category`,
-`Description`, `Sprite`, `PokeApiId`), `InvalidPokemonDataException`, and the two ports whose
-signatures name no domain type (`CachePort`, `ClockPort`). The rule that keeps it honest is
+`Description`, `Sprite`, `PokeApiId`) and `InvalidPokemonDataException` under `domain/`, plus
+the two technical ports (`CachePort`, `ClockPort`) under `port/`. The rule that keeps it honest is
 that **`shared` depends on nothing** — ArchUnit `BC3`. A shared kernel that may depend on a
 context re-couples every context through the back door, and the decomposition becomes
 decorative.
+
+### Two kinds of port, and only one of them is domain
+
+"Everything the inside needs is a port" is true and it hides a distinction that matters when
+deciding where the interface lives.
+
+| | **Domain port** | **Technical port** |
+|---|---|---|
+| Example | `PokemonRepository`, `PokemonCatalog`, `TokenIssuer`, `PasswordHasher` | `CachePort`, `ClockPort` |
+| Signature | Names domain types — `Optional<Pokemon> findById(PokemonId)` | Names none — `Instant now()`, `<T> Optional<T> get(String, Class<T>)` |
+| Expresses | A domain capability, in the ubiquitous language | A technical capability, in Java primitives |
+| Lives in | `{context}/domain/port` | `shared/port` — **outside `domain`** |
+
+A domain port must be inside `domain`: dependency inversion requires the *inner* layer to own
+the interface, and moving `PokemonRepository` outward turns the arrow around and takes Clean
+Architecture with it.
+
+A technical port has no such claim. `CachePort` is a caching abstraction expressed in `String`
+and `Class<T>`; nothing in any `domain` package imports it, and nothing will — its consumers
+are `application` and its implementations are `infrastructure`. Filing it under
+`shared.domain.port` said "this is a domain object" about something that is not one.
+
+They remain **ports**, not utilities: `L5` asserts they name no framework type, because the
+whole point of an abstraction the inside depends on is that the framework stays in the adapter.
+
+The consequence worth stating: after this, `shared/domain` contains only value objects and one
+exception. It is now true, rather than approximately true, that everything under a `domain`
+package is a domain object.
+
+### Packages are created when a class needs one
+
+The contexts were scaffolded with every layer sub-package pre-created and held open by
+`.gitkeep`. That was a mistake and is not the convention: **an empty package documents a
+prediction, not a design.** Java packages cost nothing to create at the moment a class needs
+one, and the work units already say where each class goes. Empty directories left in a
+reviewed tree read as over-structure, and `catalog/` in particular reads as abandoned when its
+three sub-packages are empty.
 
 The layers keep their existing enforcement. ArchUnit's `..domain..` matches
 `catalog.domain`, `pokedex.domain` and `identity.domain` equally, so `L1`–`L4` needed no
@@ -79,6 +118,7 @@ A new family enforces the contexts themselves:
 | `BC2` | `catalog` does not depend on `identity` |
 | `BC3` | `shared` depends on no context at all |
 | `BC4` | A context reaches another only through its `domain` — never its use cases, adapters, or controllers |
+| `L5` | A technical port in `shared/port` names no framework type |
 | `CY1` | No cycles **between** contexts |
 | `CY2` | No cycles between layers within a context |
 

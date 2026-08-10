@@ -4,7 +4,7 @@
 |---|---|
 | **Work Unit** | WU-000-D |
 | **Parent** | [WF-000 Foundation](../workflows/WF-000-foundation.md) |
-| **Objective contribution** | The 22 structural rules the compiler cannot express |
+| **Objective contribution** | The 23 structural rules the compiler cannot express |
 | **Estimate** | S |
 | **Status** | done |
 
@@ -27,7 +27,7 @@ failure rather than a review comment.
 
 ## Outputs
 
-- `architecture` test package with 22 passing rules, none frozen
+- `architecture` test package with 23 passing rules, none frozen
 
 ---
 
@@ -44,7 +44,7 @@ failure rather than a review comment.
 
 **How**
 `ClassFileImporter` walking `target/classes`, excluding generated sources and tests.
-Cache the imported classes in a static so 22 rules do not re-import 22 times.
+Cache the imported classes in a static so 23 rules do not re-import 23 times.
 
 | Field | Value |
 |---|---|
@@ -160,7 +160,7 @@ failure.
 
 ## Exit Criteria
 
-- [x] All 22 rules pass — BC1–BC4 and CY2 added with the bounded-context restructure (ADR-0013)
+- [x] All 23 rules pass — BC1–BC4 and CY2 added with the bounded-context restructure (ADR-0013)
 - [x] **No `FreezingArchRule`, no allowlists, no `@ArchIgnore`**
 - [x] Each rule demonstrated to fail on a deliberate violation, then reverted
 

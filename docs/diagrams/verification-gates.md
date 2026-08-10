@@ -7,7 +7,7 @@ flowchart TD
   V["make verify"] --> H["1 · Source hygiene<br/>bound to the validate phase"]
   H --> E["2 · Maven enforcer<br/>dependency convergence"]
   E --> C["3 · Compile"]
-  C --> A["4 · ArchUnit · 22 rules"]
+  C --> A["4 · ArchUnit · 23 rules"]
   A --> U["5 · Unit · Surefire"]
   U --> W["6 · Upstream contract · WireMock"]
   W --> K["7 · Component · Failsafe + Testcontainers"]

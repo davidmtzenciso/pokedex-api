@@ -1,4 +1,4 @@
-package com.elatusdev.pokedex.shared.domain.port;
+package com.elatusdev.pokedex.shared.port;
 
 import java.time.Duration;
 import java.util.Optional;

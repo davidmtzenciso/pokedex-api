@@ -42,7 +42,7 @@ directory, and do not re-implement the domain.
 | JaCoCo 90/90, enforcer, PIT, Failsafe | Wired. PIT targets `com.elatusdev.pokedex.*.domain.*` and `*.application.*` |
 | `Makefile` | `verify`, `test`, `arch`, `mutation`, `contract-check`, `e2e`, `up`, `down`, `keys` |
 | **WU-000-C** | `Pokemon` + 7 child types, `ReplicatedFields`/`ProprietaryFields`, `ReplicationState`, `User`, `Role`, 15 VOs, 9 exceptions, 7 ports |
-| **WU-000-D** | 22 ArchUnit rules across 10 `*ArchitectureTest` classes, none frozen |
+| **WU-000-D** | 23 ArchUnit rules across 10 `*ArchitectureTest` classes, none frozen |
 | **WU-000-B** | `src/main/resources/openapi/pokedex-api.yaml`, generated `*Api` + `*DTO`, served verbatim |
 
 | Not yet present | Owning phase |
@@ -53,6 +53,23 @@ directory, and do not re-implement the domain.
 > **The packages moved after WU-000-C and D were written** — the tree is now context-first
 > ([ADR-0013](../adr/0013-bounded-context-packages.md)). If something does not compile, check
 > the import before assuming the class is missing. Nothing was deleted.
+
+### Outstanding cleanup — do this before Phase 2
+
+The contexts were scaffolded with every layer sub-package pre-created and held open by a
+`.gitkeep`. That is **not** the convention ([ADR-0013](../adr/0013-bounded-context-packages.md)):
+a package is created when a class needs one, and an empty directory documents a prediction
+rather than a design.
+
+```bash
+find src/main/java -type d -empty -delete          # after removing the .gitkeep files
+find src/main/java -name .gitkeep -delete
+```
+
+Around 21 directories are affected, nine of them under `catalog/`. Delete them, then create
+each package at the moment its first class lands — the work units already say where every
+class goes. This is a two-minute change and it removes the single most misleading thing about
+the current tree.
 
 **Known-red, and expected:** `make verify` fails immediately without a Docker daemon — that
 guard is deliberate (risk R8), not a bug.
@@ -157,7 +174,7 @@ without it.
 
 | Order | Work unit | Delivers | Entry |
 |---|---|---|---|
-| 1 | [WU-000-D](../work-units/WU-000-D-architecture-tests.md) | 22 ArchUnit rules, none frozen | WU-000-A |
+| 1 | [WU-000-D](../work-units/WU-000-D-architecture-tests.md) | 23 ArchUnit rules, none frozen | WU-000-A |
 | 2 | [WU-000-C](../work-units/WU-000-C-domain-core.md) | Aggregates, state machine, **ports** | WU-000-A, IAR re-confirmed |
 | 3 | [WU-000-B](../work-units/WU-000-B-contract.md) | `pokedex-api.yaml`, generated `*Api` + `*DTO` | WU-000-A |
 
@@ -185,7 +202,7 @@ make mutation
 mvn -B generate-sources && ls target/generated-sources/openapi/**/api/
 ```
 
-- [ ] All 22 ArchUnit rules pass. **Each was proven against a deliberate violation** before being trusted
+- [ ] All 23 ArchUnit rules pass. **Each was proven against a deliberate violation** before being trusted
 - [ ] `L2` turns red when a domain class imports Spring — demonstrated, then reverted
 - [ ] Every invariant **testable at the domain tier** has a passing named test — I1, I8, I9 and I11 name a `*ComponentTest` in [WF-000 §4.4](../workflows/WF-000-foundation.md) and need infrastructure later phases build
 - [ ] Domain line coverage ≥ 95%; **mutation score ≥ 85% on `domain`**, every survivor fixed or justified as equivalent

@@ -174,7 +174,7 @@ patterns, and anti-patterns, each ending in a verification. Order:
 | [WU-000-A](docs/work-units/WU-000-A-project-setup.md) | One module, four contexts, every gate wired | WF-000 |
 | [WU-000-B](docs/work-units/WU-000-B-contract.md) | OpenAPI document, generated interfaces | WF-000 |
 | [WU-000-C](docs/work-units/WU-000-C-domain-core.md) | Value objects, aggregates, state machine, ports | WF-000 |
-| [WU-000-D](docs/work-units/WU-000-D-architecture-tests.md) | 22 ArchUnit rules | WF-000 |
+| [WU-000-D](docs/work-units/WU-000-D-architecture-tests.md) | 23 ArchUnit rules | WF-000 |
 | [WU-AUTH-A](docs/work-units/WU-AUTH-A-user-domain.md) | `User` aggregate, refresh-token families | WF-AUTH |
 | [WU-AUTH-B](docs/work-units/WU-AUTH-B-security-adapters.md) | ES256, BCrypt, `jti` sessions | WF-AUTH |
 | [WU-AUTH-C](docs/work-units/WU-AUTH-C-auth-endpoints.md) | Endpoints and deny-by-default routing | WF-AUTH |

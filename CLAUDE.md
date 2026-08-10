@@ -98,7 +98,7 @@ com.elatusdev.pokedex.{catalog|pokedex|identity|shared}.{domain|application|infr
 | `catalog` | Reading PokeAPI — fan-out, resilience, cache | A local store, or any notion of a curator |
 | `pokedex` | The `Pokemon` aggregate, replication state, merge policy, proprietary fields | Anything about who is logged in, beyond a `UserId` |
 | `identity` | `User`, `RefreshToken`, hashing, token issuance, sessions | Anything about Pokémon |
-| `shared` | Replicated VOs, `CachePort`, `ClockPort` — what two contexts speak natively | **Anything that depends on a context** |
+| `shared` | `domain/` — replicated VOs only. `port/` — technical ports (`CachePort`, `ClockPort`) | **Anything that depends on a context** |
 
 Before adding a class, decide which context it is *about*, then which layer it *is*. Getting
 the second right and the first wrong still fails the build.
@@ -106,6 +106,8 @@ the second right and the first wrong still fails the build.
 - **`shared` depends on nothing** (`BC3`). If the thing you want to put there needs a context, it is not shared — it belongs in that context.
 - **Contexts meet through `domain` or not at all** (`BC4`). Never import another context's use case, adapter, or controller.
 - **Identifiers cross; models do not.** `pokedex` may hold a `UserId`. It may not hold a `User`.
+- **Two kinds of port.** A *domain* port names domain types (`Optional<Pokemon> findById(PokemonId)`) and lives in `{context}/domain/port`. A *technical* port names none (`Instant now()`) and lives in `shared/port`, **outside `domain`** — everything under a `domain` package is a domain object, and that is meant literally (`L5`).
+- **Create a package when a class needs one.** No empty directories, no `.gitkeep` scaffolding. An empty package documents a prediction, not a design.
 
 See [ADR-0013](docs/adr/0013-bounded-context-packages.md).
 
@@ -118,7 +120,8 @@ of `catalog`, `pokedex`, `identity`, `shared`.
 
 | Thing | Path | Enforced by |
 |---|---|---|
-| Aggregates, value objects, policies, ports | `{context}/domain/{model,vo,policy,port,exception}` | `L2`, `N3`, `N5` |
+| Aggregates, value objects, policies, **domain** ports | `{context}/domain/{model,vo,policy,port,exception}` | `L2`, `N3`, `N5` |
+| **Technical** ports — `CachePort`, `ClockPort` | `shared/port` — outside `domain` | `L5` |
 | Use cases — one class per operation | `{context}/application/usecase` | `N1` |
 | JPA entities and Spring Data repositories | `pokedex/infrastructure/persistence` | `N3`, `N4`, `IO1` |
 | PokeAPI client | `catalog/infrastructure/pokeapi` | `IO2` |
@@ -224,7 +227,7 @@ New code must clear all of these before a push:
 | Branch coverage | ≥ 90% | JaCoCo `check` — fails the build |
 | Mutation score — every `..domain..` | ≥ 85% | PIT, `make mutation` — deliberate, not in the commit loop |
 | Mutation score — every `..application..` | ≥ 75% | PIT |
-| ArchUnit rules | all 22 pass, none frozen | `mvn -B test -Dtest='*ArchitectureTest'` |
+| ArchUnit rules | all 23 pass, none frozen | `mvn -B test -Dtest='*ArchitectureTest'` |
 | Source hygiene | no file header, no Javadoc, no `// NOSONAR` | `scripts/check-source-hygiene.sh`, bound to `validate` |
 | Secrets | none | `gitleaks detect`, run locally |
 
