@@ -104,6 +104,33 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+
+    <!-- ES256 sign and verify. jjwt-impl and jjwt-jackson are runtime service providers:
+         the compiler never sees them, and omitting either fails at the first Jwts call -->
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-api</artifactId>
+      <version>${jjwt.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-impl</artifactId>
+      <version>${jjwt.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-jackson</artifactId>
+      <version>${jjwt.version}</version>
       <scope>runtime</scope>
     </dependency>
 
@@ -129,6 +156,11 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -158,6 +190,18 @@
             <configuration>
               <executable>bash</executable>
               <arguments><argument>${project.basedir}/scripts/check-source-hygiene.sh</argument></arguments>
+            </configuration>
+          </execution>
+          <!-- a throwaway ES256 keystore for the test run, so `mvn verify` is green on a
+               clean clone without `make keys` first. It lives under target/ and is never
+               the dev keystore: nothing signed here is valid anywhere else. -->
+          <execution>
+            <id>test-keystore</id>
+            <phase>generate-test-resources</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <executable>bash</executable>
+              <arguments><argument>${project.basedir}/scripts/generate-test-keystore.sh</argument></arguments>
             </configuration>
           </execution>
         </executions>
@@ -223,6 +267,14 @@
         <version>${surefire.version}</version>
         <configuration>
           <excludes><exclude>**/*ComponentTest.java</exclude></excludes>
+          <!-- application-test.yaml OVERRIDES the main configuration; it must not REPLACE
+               it. A file named application.yaml in src/test/resources shadows the one in
+               src/main/resources entirely, which silently drops the context path and every
+               other main setting — and the symptom is a security chain that denies every
+               public route. -->
+          <systemPropertyVariables>
+            <spring.profiles.active>test</spring.profiles.active>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
 
@@ -232,6 +284,9 @@
         <version>${surefire.version}</version>
         <configuration>
           <includes><include>**/*ComponentTest.java</include></includes>
+          <systemPropertyVariables>
+            <spring.profiles.active>test</spring.profiles.active>
+          </systemPropertyVariables>
           <!-- spring-boot:repackage replaces the main artifact with a fat jar whose classes
                sit under BOOT-INF/classes. Failsafe defaults to that artifact, and the
                @SpringBootConfiguration package search then finds nothing. -->

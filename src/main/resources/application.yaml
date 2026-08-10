@@ -5,6 +5,18 @@ server:
 spring:
   application:
     name: pokedex-api
+  # the default in-memory user prints a generated password to stdout at boot, which is a
+  # credential in a log line (AC-AUTH-4). Authentication here is the JWT filter, not a
+  # UserDetailsService, so the autoconfiguration has nothing to contribute either.
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+  data:
+    redis:
+      host: ${POKEDEX_REDIS_HOST:localhost}
+      port: ${POKEDEX_REDIS_PORT:6379}
+      timeout: PT2S
+      connect-timeout: PT2S
 
   datasource:
     url: ${POKEDEX_DB_URL:jdbc:postgresql://postgres:5432/pokedex}
@@ -26,6 +38,24 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+pokedex:
+  jwt:
+    # a path, not a secret. The password has no default on purpose: a committed fallback is
+    # a committed credential (java:S6437), so an unset variable must fail the boot instead
+    keystore-path: ${JWT_KEYSTORE_PATH:file:keys/pokedex-dev.p12}
+    keystore-password: ${JWT_KEYSTORE_PASSWORD}
+    key-alias: ${JWT_KEY_ALIAS:pokedex-dev}
+    key-id: ${JWT_KEY_ID:pokedex-dev-1}
+    issuer: ${JWT_ISSUER:https://pokedex.elatus-dev.com}
+    audience: ${JWT_AUDIENCE:pokedex-api}
+    access-ttl: ${JWT_ACCESS_TTL:PT15M}
+    refresh-ttl: ${JWT_REFRESH_TTL:P7D}
+  security:
+    # an explicit origin allow-list; never '*'
+    cors-allowed-origins: ${POKEDEX_CORS_ORIGINS:http://localhost:3000,http://localhost:5173}
+    login-rate-limit: ${POKEDEX_LOGIN_RATE_LIMIT:20}
+    login-rate-window: ${POKEDEX_LOGIN_RATE_WINDOW:PT1M}
 
 springdoc:
   # The contract is authored, not derived. Annotation scanning would build a second

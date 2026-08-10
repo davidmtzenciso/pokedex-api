@@ -276,6 +276,8 @@ class ValueObjectTest {
             assertThatThrownBy(() -> UserId.of(-1)).isInstanceOf(InvalidPokemonDataException.class);
             assertThatThrownBy(() -> PokeApiId.of(0)).isInstanceOf(InvalidPokemonDataException.class);
             assertThatThrownBy(() -> PokeApiId.of(-1)).isInstanceOf(InvalidPokemonDataException.class);
+            assertThatThrownBy(() -> RefreshTokenId.of(0)).isInstanceOf(InvalidPokemonDataException.class);
+            assertThatThrownBy(() -> RefreshTokenId.of(-1)).isInstanceOf(InvalidPokemonDataException.class);
         }
 
         @Test
@@ -283,6 +285,7 @@ class ValueObjectTest {
             assertThat(PokemonId.of(7).value()).isEqualTo(7L);
             assertThat(UserId.of(7).value()).isEqualTo(7L);
             assertThat(PokeApiId.of(25).value()).isEqualTo(25);
+            assertThat(RefreshTokenId.of(7).value()).isEqualTo(7L);
         }
     }
 
