@@ -78,7 +78,10 @@ class RefreshTokenRotationTest {
     private ClockPort clock;
 
     private RefreshTokenRotationUseCase useCase() {
-        return new RefreshTokenRotationUseCase(refreshTokens, users, tokenIssuer, sessions, clock);
+        // a real revoker over the same mocked repository: mocking it would silence the
+        // saveAll verification that proves the family is swept
+        return new RefreshTokenRotationUseCase(
+                refreshTokens, users, tokenIssuer, sessions, clock, new RefreshTokenFamilyRevoker(refreshTokens));
     }
 
     private static VerifiedToken verifiedRefresh(String jti) {

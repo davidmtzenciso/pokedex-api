@@ -29,6 +29,8 @@ class EntityMappingComponentTest {
             "PokemonStatDataModel",
             "PokemonTagDataModel",
             "PokemonTypeDataModel",
+            // refresh_tokens is no longer "owned by another work unit": it has an adapter now
+            "RefreshTokenDataModel",
             "UserDataModel");
 
     private final EntityManagerFactory entityManagerFactory;

@@ -30,18 +30,21 @@ public class RefreshTokenRotationUseCase {
     private final TokenIssuer tokenIssuer;
     private final SessionStore sessions;
     private final ClockPort clock;
+    private final RefreshTokenFamilyRevoker familyRevoker;
 
     public RefreshTokenRotationUseCase(
             RefreshTokenRepository refreshTokens,
             UserRepository users,
             TokenIssuer tokenIssuer,
             SessionStore sessions,
-            ClockPort clock) {
+            ClockPort clock,
+            RefreshTokenFamilyRevoker familyRevoker) {
         this.refreshTokens = refreshTokens;
         this.users = users;
         this.tokenIssuer = tokenIssuer;
         this.sessions = sessions;
         this.clock = clock;
+        this.familyRevoker = familyRevoker;
     }
 
     public TokenPair rotate(String presentedToken) {
@@ -66,11 +69,11 @@ public class RefreshTokenRotationUseCase {
         if (!presented.isRevoked()) {
             return;
         }
-        List<RefreshToken> family = refreshTokens.findByFamilyId(presented.familyId());
-        refreshTokens.saveAll(family.stream().map(token -> token.revoke(now)).toList());
+        // in its own transaction: the throw below would otherwise roll this back
+        int revoked = familyRevoker.revokeFamily(presented.familyId(), now);
         log.warn(
                 "security: refresh token reuse detected, revoked {} tokens in family {}",
-                family.size(),
+                revoked,
                 presented.familyId());
         throw new TokenReuseDetectedException(presented.familyId());
     }
