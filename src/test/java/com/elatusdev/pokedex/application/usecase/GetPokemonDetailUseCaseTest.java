@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.elatusdev.pokedex.application.result.PokemonDetailResult;
+import com.elatusdev.pokedex.domain.exception.InvalidPokemonDataException;
 import com.elatusdev.pokedex.domain.exception.PokemonNotFoundUpstreamException;
 import com.elatusdev.pokedex.domain.exception.UpstreamUnavailableException;
 import com.elatusdev.pokedex.domain.model.Pokemon;
@@ -131,11 +132,14 @@ class GetPokemonDetailUseCaseTest {
         assertThatThrownBy(() -> useCase.detail("1")).isSameAs(outage);
     }
 
+    // blank is malformed input, not "no such Pokemon" — the contract declares minLength 1,
+    // so this is a 400 and never a 404
     @ParameterizedTest
     @ValueSource(strings = {"", "   "})
-    void should_reject_a_blank_reference(String reference) {
+    void should_reject_a_blank_reference_as_invalid_rather_than_absent(String reference) {
         assertThatThrownBy(() -> useCase.detail(reference))
-                .isInstanceOf(PokemonNotFoundUpstreamException.class);
+                .isInstanceOf(InvalidPokemonDataException.class)
+                .hasMessageContaining("idOrName");
 
         verifyNoInteractions(catalog);
         verifyNoInteractions(repository);

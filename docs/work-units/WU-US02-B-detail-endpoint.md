@@ -6,7 +6,7 @@
 | **Parent** | [WF-US02 Detailed View](../workflows/WF-US02-detailed-view.md) |
 | **Objective contribution** | `GET /v1/pokedex/pokemon/{idOrName}` |
 | **Estimate** | S |
-| **Status** | not started |
+| **Status** | done |
 
 ## Objective
 
@@ -72,9 +72,21 @@ description, and the full chain — with Eevee as a fixture.
 
 ## Exit Criteria
 
-- [ ] Artwork, six stats, clean description, full evolution chain
-- [ ] Eevee shows eight branches through the API, not only the mapper
-- [ ] Unknown name → 404 `POKEMON_NOT_FOUND_UPSTREAM` as `problem+json`
+- [x] Artwork, six stats, two types, clean description, full evolution chain
+- [x] Eevee shows eight branches **through the API**, not only the mapper
+- [x] Unknown name → 404 `POKEMON_NOT_FOUND_UPSTREAM` as `problem+json`
+- [x] Either an id or a name resolves; mass in kg and height in metres
+- [x] A species with no evolution chain returns an empty list, not a 500
+
+### On "extract the shared policy if it appears twice"
+
+It did. `UpstreamOutagePolicy` now states the degradation rule once for both read paths.
+The distinction it encodes is the one that matters: **only an outage falls back**. An absent
+Pokemon is an answer, so a 404 propagates and is never masked by stale local data — asserted
+by `should_not_fall_back_to_the_replica_when_upstream_simply_has_no_such_pokemon`.
+
+A blank `idOrName` is a **400**, not a 404: the contract declares `minLength: 1`, so it is
+malformed input rather than a Pokemon that does not exist.
 
 ```bash
 mvn -B verify
