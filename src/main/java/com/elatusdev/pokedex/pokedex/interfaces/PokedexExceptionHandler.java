@@ -1,10 +1,14 @@
 package com.elatusdev.pokedex.pokedex.interfaces;
 
 import com.elatusdev.pokedex.contract.dto.ProblemDetailDTO;
+import com.elatusdev.pokedex.pokedex.domain.BatchRangeTooLargeException;
 import com.elatusdev.pokedex.pokedex.domain.DuplicatePokemonException;
 import com.elatusdev.pokedex.pokedex.domain.IllegalStateTransitionException;
 import com.elatusdev.pokedex.pokedex.domain.PokemonNotFoundException;
+import com.elatusdev.pokedex.pokedex.domain.UpstreamReplicationFailedException;
 import com.elatusdev.pokedex.shared.interfaces.ProblemResponses;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +23,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 // entirely different things to a client.
 @RestControllerAdvice
 public class PokedexExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(PokedexExceptionHandler.class);
 
     // AC-US04-2 — the 404 the story names explicitly
     @ExceptionHandler(PokemonNotFoundException.class)
@@ -51,5 +57,22 @@ public class PokedexExceptionHandler {
     public ResponseEntity<ProblemDetailDTO> onStaleVersion(OptimisticLockingFailureException stale) {
         return ProblemResponses.respond(ProblemResponses.body(
                 HttpStatus.PRECONDITION_FAILED, "STALE_VERSION", "stale-version", stale.getMessage()));
+    }
+
+    // 400 rather than a truncated batch: a caller who asked for 500 ids and silently got 200
+    // believes it replicated the rest (WU-US03-B B3)
+    @ExceptionHandler(BatchRangeTooLargeException.class)
+    public ResponseEntity<ProblemDetailDTO> onBatchTooLarge(BatchRangeTooLargeException rejected) {
+        return ProblemResponses.respond(ProblemResponses.body(
+                HttpStatus.BAD_REQUEST, "BATCH_RANGE_TOO_LARGE", "batch-range-too-large", rejected.getMessage()));
+    }
+
+    // 502, never 500: PokeAPI being unreachable is not this service failing, and the status
+    // is how a caller tells "retry later" from "your request was wrong"
+    @ExceptionHandler(UpstreamReplicationFailedException.class)
+    public ResponseEntity<ProblemDetailDTO> onUpstreamFailed(UpstreamReplicationFailedException outage) {
+        log.warn("upstream replication failed: {}", outage.getMessage());
+        return ProblemResponses.respond(ProblemResponses.body(
+                HttpStatus.BAD_GATEWAY, "UPSTREAM_UNAVAILABLE", "upstream-unavailable", outage.getMessage()));
     }
 }
