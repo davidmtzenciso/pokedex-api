@@ -9,15 +9,25 @@ import org.junit.jupiter.api.Test;
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class CycleArchitectureTest {
 
+    // the first segment is now the bounded context, not the layer — ADR-0013
+    @Test
+    void should_be_free_of_cycles_when_slicing_by_bounded_context() {
+        slices()
+                .matching("com.elatusdev.pokedex.(*)..")
+                .should().beFreeOfCycles()
+                .because("CY1 — a cycle between contexts means neither can be extracted or reasoned about alone")
+                .check(ProjectClasses.production());
+    }
+
     // sliced at layer granularity, not per package: ReplicationState -> IllegalStateTransitionException
     // -> ReplicationState is a legitimate cycle between domain.model and domain.exception, and an
     // aggregate that cannot name the exception it throws is the wrong trade
     @Test
-    void should_be_free_of_cycles_when_slicing_by_layer() {
+    void should_be_free_of_cycles_when_slicing_by_layer_within_a_context() {
         slices()
-                .matching("com.elatusdev.pokedex.(*)..")
+                .matching("com.elatusdev.pokedex.*.(*)..")
                 .should().beFreeOfCycles()
-                .because("CY1 — a package cycle compiles fine and makes every later extraction a rewrite")
+                .because("CY2 — a package cycle compiles fine and makes every later extraction a rewrite")
                 .check(ProjectClasses.production());
     }
 }

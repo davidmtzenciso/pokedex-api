@@ -375,8 +375,8 @@
         <version>${pitest.version}</version>
         <configuration>
           <targetClasses>
-            <param>com.elatusdev.pokedex.domain.*</param>
-            <param>com.elatusdev.pokedex.application.*</param>
+            <param>com.elatusdev.pokedex.*.domain.*</param>
+            <param>com.elatusdev.pokedex.*.application.*</param>
           </targetClasses>
           <targetTests><param>com.elatusdev.pokedex.*</param></targetTests>
           <mutationThreshold>85</mutationThreshold>

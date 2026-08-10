@@ -97,7 +97,7 @@ reads as a type mismatch and takes an hour to diagnose. Define once, `$ref` ever
 > `/v1/pokedex/pokemon` is reachable at `/api/v1/pokedex/pokemon`. The spec does not
 > include `/api`.
 
-> **Generated sources are excluded from coverage, Sonar, and the copyright gate.** If your
+> **Generated sources are excluded from coverage and the source-hygiene gate.** If your
 > coverage number moves unexpectedly after a spec change, check the exclusion patterns.
 
 > **Validation annotations come from the spec.** `minimum`, `maxLength`, `pattern`, and
@@ -106,7 +106,7 @@ reads as a type mismatch and takes an hour to diagnose. Define once, `$ref` ever
 
 > **Parameter validation throws two exception types.** `ConstraintViolationException` from
 > the `@Validated` proxy and `HandlerMethodValidationException` from MVC method validation.
-> `GlobalExceptionHandler` maps both to an identical 400 shape — if you only map one, half
+> `CatalogExceptionHandler` maps both to an identical 400 shape — if you only map one, half
 > your validation failures return 500.
 
 ---

@@ -4,7 +4,7 @@
 |---|---|
 | **Work Unit** | WU-000-D |
 | **Parent** | [WF-000 Foundation](../workflows/WF-000-foundation.md) |
-| **Objective contribution** | The 16 structural rules the POM cannot express |
+| **Objective contribution** | The 26 structural rules the compiler cannot express |
 | **Estimate** | S |
 | **Status** | done |
 
@@ -27,7 +27,7 @@ failure rather than a review comment.
 
 ## Outputs
 
-- `architecture` test package with 16 passing rules, none frozen
+- `architecture` test package with 26 passing rules, none frozen
 
 ---
 
@@ -44,13 +44,13 @@ failure rather than a review comment.
 
 **How**
 `ClassFileImporter` walking `target/classes`, excluding generated sources and tests.
-Cache the imported classes in a static so 16 rules do not re-import 16 times.
+Cache the imported classes in a static so 26 rules do not re-import 26 times.
 
 | Field | Value |
 |---|---|
 | **Produces** | Shared importer |
 | **Verify** | `mvn -B test -Dtest='*ArchitectureTest'` |
-| **Pass when** | Imports every compiled production class under `com.elatusdev.pokedex`; no test class and no generated class appears. (Three of the four layer packages are still empty at this point — "imports all four" only becomes observable at Phase 6, so it is not the criterion) |
+| **Pass when** | Imports every compiled production class under `com.elatusdev.pokedex`; no test class and no generated class appears. (the `application`, `infrastructure` and `web` layers are still empty in most contexts at this point, so "imports every layer" only becomes observable later and is not the criterion) |
 | **On fail / Rollback** | Ensure the importer points at `target/classes`, not `src` |
 
 ### I2 — Layer and purity rules (L1–L4)
@@ -74,7 +74,7 @@ Spring, JPA, or Jakarta · `L3` controllers must not touch `*Repository`/`*DataM
 | **Pass when** | The violation fails the build naming the class |
 | **On fail / Rollback** | Move the dependency — **never** suppress the rule |
 
-### I3 — Naming and containment (N1–N5, IO1–IO2)
+### I3 — Naming and containment (N1–N7, N9, IO1–IO2)
 
 | Field | Value |
 |---|---|
@@ -90,12 +90,21 @@ Spring, JPA, or Jakarta · `L3` controllers must not touch `*Repository`/`*DataM
 no `*Service` inside `usecase` · `EntityManager`/`JdbcTemplate`/`JpaRepository` only under
 `..infrastructure..` · `RestClient` only under `..infrastructure.pokeapi..`.
 
+Then the three that keep the three representations of one concept distinguishable:
+
+- **`N6`** — both halves. Everything in `..web.dto..` ends `DTO`, **and** no `*DTO` exists outside it. The generator guarantees the first; only the second catches a hand-written `PokemonResponse` that never passed through the contract.
+- **`N7`** — no `..domain..` class ends `DTO`, `Dto`, `DataModel`, `Entity`, `Request`, or `Response`. The domain type is the **unsuffixed** one; a suffix there means a projection leaked inward.
+- **`N9`** — `..port..` holds only interfaces and **carrier records** (`CatalogPage` returns rows and total together, so one call answers both questions); a concrete class there is an adapter in hiding. `*Adapter` lives in `..infrastructure..` and **implements an interface from a port package** — an adapter that adapts nothing is a class in the wrong place.
+
+**Avoid**
+- Writing `N6`'s first half and stopping. It restates what the generator already does and catches nothing
+
 | Field | Value |
 |---|---|
-| **Produces** | Seven rules |
-| **Verify** | `mvn -B test -Dtest='*ArchitectureTest'` |
-| **Pass when** | All green against the real codebase |
-| **On fail / Rollback** | Move the class |
+| **Produces** | Ten rules |
+| **Verify** | `mvn -B test -Dtest='*ArchitectureTest'`, then one deliberate violation per rule |
+| **Pass when** | All green against the real codebase; each rule seen red on its own probe, then reverted |
+| **On fail / Rollback** | Move or rename the class. Never relax the rule |
 
 ### I4 — Immutability, construction, security, contract (IMF1, CI1, SB-PA4, OA1)
 
@@ -160,7 +169,7 @@ failure.
 
 ## Exit Criteria
 
-- [x] All 16 rules pass — 23 assertions across 9 `*ArchitectureTest` classes
+- [x] All 26 rules pass — BC1–BC4 and CY2 added with the bounded-context restructure (ADR-0013)
 - [x] **No `FreezingArchRule`, no allowlists, no `@ArchIgnore`**
 - [x] Each rule demonstrated to fail on a deliberate violation, then reverted
 

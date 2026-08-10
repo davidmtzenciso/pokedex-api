@@ -17,7 +17,7 @@ The i18n half of `ApiError` also carries real cost here: message bundles, a loca
 Use RFC 9457 (Problem Details for HTTP APIs) as the error envelope, served as `application/problem+json`, via Spring Boot 4's native `ProblemDetail` support.
 
 Retain the house pattern's substance:
-- One `@RestControllerAdvice` (`GlobalExceptionHandler`) is the only place exceptions become responses.
+- One `@RestControllerAdvice` **per context** is the only place exceptions become responses — `AuthExceptionHandler`, `CatalogExceptionHandler`, and the context-free `ValidationExceptionHandler`. A single global advice would have to import every context's exceptions, which makes `shared` depend on all of them (`BC3`).
 - Typed domain exceptions, one `throw` per method, translated at the boundary.
 - A stable machine-readable `code` survives as an RFC 9457 extension member, so clients still branch on `POKEMON_NOT_FOUND` rather than parsing prose.
 

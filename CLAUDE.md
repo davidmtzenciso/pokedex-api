@@ -85,18 +85,117 @@ dependency. Define a port and implement it in `infrastructure`.
 
 ---
 
+## The second rule
+
+**The top of the package tree is the bounded context, not the layer.**
+
+```
+com.elatusdev.pokedex.{catalog|pokedex|identity|shared}.{domain|application|infrastructure|web}
+```
+
+| Context | Holds | Never holds |
+|---|---|---|
+| `catalog` | Reading PokeAPI — fan-out, resilience, cache | A local store, or any notion of a curator |
+| `pokedex` | The `Pokemon` aggregate, replication state, merge policy, proprietary fields | Anything about who is logged in, beyond a `UserId` |
+| `identity` | `User`, `RefreshToken`, hashing, token issuance, sessions | Anything about Pokémon |
+| `shared` | `domain/` — replicated VOs only. `port/` — technical ports (`CachePort`, `ClockPort`) | **Anything that depends on a context** |
+
+Before adding a class, decide which context it is *about*, then which layer it *is*. Getting
+the second right and the first wrong still fails the build.
+
+- **`shared` depends on nothing** (`BC3`). If the thing you want to put there needs a context, it is not shared — it belongs in that context.
+- **Contexts meet through `domain` or not at all** (`BC4`). Never import another context's use case, adapter, or controller.
+- **Identifiers cross; models do not.** `pokedex` may hold a `UserId`. It may not hold a `User`.
+- **Two kinds of port.** A *domain* port names domain types (`Optional<Pokemon> findById(PokemonId)`) and lives in `{context}/domain/port`. A *technical* port names none (`Instant now()`) and lives in `shared/port`, **outside `domain`** — everything under a `domain` package is a domain object, and that is meant literally (`L5`).
+- **Create a package when a class needs one.** No empty directories, no `.gitkeep` scaffolding. An empty package documents a prediction, not a design.
+
+See [ADR-0013](docs/adr/0013-bounded-context-packages.md).
+
+---
+
 ## Where things live
+
+Everything below is relative to `com.elatusdev.pokedex.{context}`, where `{context}` is one
+of `catalog`, `pokedex`, `identity`, `shared`.
 
 | Thing | Path | Enforced by |
 |---|---|---|
-| Aggregates, value objects, policies, ports | `domain/…/domain/{model,vo,policy,port,exception}` | `DomainPurityArchitectureTest` |
-| Use cases — one class per operation | `application/…/application/usecase` | `N1` |
-| JPA entities and Spring Data repositories | `infrastructure/…/persistence` | `N3`, `N4`, `IO1` |
-| PokeAPI client | `infrastructure/…/pokeapi` | `IO2` |
-| Controllers implementing generated `*Api` | `web/…/web/controller` | `N2`, `OA1` |
+| Aggregates, value objects, policies, **domain** ports | `{context}/domain/{model,vo,policy,port,exception}` | `L2`, `N3`, `N5` |
+| **Technical** ports — `CachePort`, `ClockPort` | `shared/port` — outside `domain` | `L5` |
+| Use cases — one class per operation | `{context}/application/usecase` | `N1` |
+| JPA entities and Spring Data repositories | `{context}/infrastructure/persistence` | `N3`, `N4`, `IO1` |
+| PokeAPI client | `catalog/infrastructure/pokeapi` | `IO2` |
+| Redis cache adapter | `catalog/infrastructure/cache` | `IO1` |
+| Token issuer, hasher, session store | `identity/infrastructure/security` | — |
+| Controllers implementing generated `*Api` | `{context}/web/controller` | `N2`, `OA1` |
+| `@RestControllerAdvice` — **one per context** | `{context}/web/error` · context-free rows in `shared/web/error` | `BC3` |
+| `SecurityConfig`, filters, entry points | `identity/web/{config,security}` | `SB-PA4` |
 | The OpenAPI contract | `src/main/resources/openapi/pokedex-api.yaml` | `OA1` |
+| Generated `*Api` and `*DTO` | `target/generated-sources/…` — **never edited, never committed** | `OA1` |
 | Flyway migrations | `src/main/resources/db/migration` | Fails fast on checksum drift |
 | ArchUnit rules | `src/test/java/com/elatusdev/pokedex/architecture` | Itself |
+
+---
+
+## Naming
+
+**One concept has three representations, and the name tells you which one you are holding.**
+
+| Representation | Name | Lives in | Rule |
+|---|---|---|---|
+| Wire | `PokemonSummaryDTO` | `web/dto` — generated | `N6` |
+| Persistence | `PokemonDataModel` | `{context}/infrastructure/persistence/model` | `N4` |
+| **Domain** | `Pokemon` | `{context}/domain/model` | `N7` |
+
+**The domain type is the unsuffixed one, and that is the convention rather than an
+oversight.** `Pokemon` *is* the Pokémon; the other two are projections of it. A domain
+expert says "Pokémon", never "PokemonDomain" — the domain carries the ubiquitous language,
+and a technical suffix there both duplicates what `pokedex.domain.model` already says and
+signals that a projection leaked inward. `N7` fails the build on any `..domain..` class
+ending in `DTO`, `Dto`, `DataModel`, `Entity`, `Request`, or `Response`.
+
+### Suffixes that are required
+
+| Suffix | Means | Must live in | Rule |
+|---|---|---|---|
+| `*UseCase` | One application operation | `{context}/application/usecase` | `N1` |
+| `*Controller` | HTTP entry point implementing a generated `*Api` | `{context}/web/controller` | `N2`, `OA1` |
+| `*Repository` | A persistence **port** (interface) or its Spring Data interface | `{context}/domain/port` or `..infrastructure.persistence..` | `N3` |
+| `*DataModel` | A JPA entity | `..infrastructure.persistence.model..` | `N4` |
+| `*Exception` | A domain failure mode, extending `RuntimeException` | `{context}/domain/exception` | `N5` |
+| `*DTO` | A wire type, generated from the contract | `web/dto` | `N6` |
+| `*Adapter` | An implementation of a port | `..infrastructure..` | `N9` |
+| `*Port` | A **technical** port naming no domain type | `shared/port` | `L5` |
+
+### Ports and adapters
+
+A **port names a capability**; an **adapter names the technology** that meets it.
+
+```
+PokemonRepository            ← the port: what the domain needs
+JpaPokemonRepositoryAdapter  ← the adapter: how it is met
+```
+
+`N9` asserts all three halves of that: `..port..` holds only interfaces and **carrier
+records**, every `*Adapter` lives in `..infrastructure..`, and every `*Adapter` actually
+implements an interface from a port package. A class named `*Adapter` that adapts nothing is
+just a class in the infrastructure package.
+
+A carrier record is permitted because a port sometimes needs a type for its own return
+value — `CatalogPage(rows, totalCount)` exists so one upstream call answers both questions
+rather than two. What `N9` forbids is a **concrete class with behaviour** in a port package,
+which is an adapter that has not admitted it yet.
+
+### Names to avoid entirely
+
+`*Service`, `*Manager`, `*Helper`, `*Util`, `*Impl`, `*Info`, `*Data`. These are the names
+people reach for when they have not decided what a class **is**. `*Service` inside
+`..usecase..` is a build failure (`N5`) — it is the god object this structure exists to
+prevent. Elsewhere they are a review comment.
+
+`FooImpl` implementing `Foo` is the specific one worth naming: if there is exactly one
+implementation, the interface is not earning its keep; if there are several, `Impl` tells
+you nothing about which is which.
 
 ---
 
@@ -130,6 +229,7 @@ dependency. Define a port and implement it in `infrastructure`.
 - `RestClient` for HTTP. `RestTemplate`, `WebClient`, and WebFlux are forbidden.
 - `@ConfigurationProperties` records for config. No scattered `@Value`.
 - Optimistic locking with `@Version` by default. No remote I/O inside a transaction.
+- **Flyway owns the schema; `ddl-auto` is `validate`.** Never a value that writes — it cannot generate the partial unique index, so the schema would be silently wrong. An applied migration is never edited; add a corrective one ([ADR-0012](docs/adr/0012-flyway-versioned-migrations.md)).
 - Every list endpoint takes `Pageable`. Default size **10**, maximum **100**. A larger `size` is a 400 `INVALID_PAGINATION` — **reject, never silently clamp**.
 - Bind to request DTOs, never to entities — mass assignment is OWASP A08.
 
@@ -166,7 +266,7 @@ See [ADR-0008](docs/adr/0008-openapi-contract-distribution.md).
 | Unit | `*Test.java` | Surefire | Alongside the package under test |
 | Component | `*ComponentTest.java` | Failsafe + Testcontainers | `src/test/java/.../component` |
 | Architecture | `*ArchitectureTest.java` | Surefire | `src/test/java/.../architecture` |
-| Mutation | PIT, `make mutation` | pitest-maven | `domain` (85%), `application` (75%) |
+| Mutation | PIT, `make mutation` | pitest-maven | `*.domain.*` (85%), `*.application.*` (75%) — the wildcard is the context |
 | API E2E | Newman collection | Newman | `e2e/` |
 
 Rules:
@@ -184,19 +284,20 @@ Rules:
 
 New code must clear all of these before a push:
 
-| Gate | Threshold |
-|---|---|
-| Line coverage | ≥ 90% |
-| Branch coverage | ≥ 90% |
-| Mutation score — `domain` | ≥ 85% (`make mutation`, not in the commit loop) |
-| Mutation score — `application` | ≥ 75% |
-| Duplication (new code) | ≤ 1% |
-| New blocker / critical / major violations | 0 |
-| New code smells | ≤ 5 |
-| Security hotspots reviewed | 100% |
-| HIGH/CRITICAL CVEs | 0 |
-| Secrets detected (`gitleaks`) | 0 |
-| ArchUnit rules | all pass, none frozen |
+| Gate | Threshold | Enforced by |
+|---|---|---|
+| Line coverage | ≥ 90% | JaCoCo `check` — fails the build |
+| Branch coverage | ≥ 90% | JaCoCo `check` — fails the build |
+| Mutation score — every `..domain..` | ≥ 85% | PIT, `make mutation` — deliberate, not in the commit loop |
+| Mutation score — every `..application..` | ≥ 75% | PIT |
+| ArchUnit rules | all 26 pass, none frozen | `mvn -B test -Dtest='*ArchitectureTest'` |
+| Source hygiene | no file header, no Javadoc, no `// NOSONAR` | `scripts/check-source-hygiene.sh`, bound to `validate` |
+| Secrets | none | `gitleaks detect`, run locally |
+
+> **Duplication ratios, code smells, security-hotspot review, and CVE counts are deliberately
+> absent.** They need a hosted analysis server this project does not have, so they were
+> deleted rather than restated as aspirations — [verification gates](docs/diagrams/verification-gates.md).
+> A threshold nobody measures is cheap talk.
 
 ### Suppression ladder
 
@@ -234,7 +335,10 @@ docker compose up --build                  # postgres + redis + api
 | Bulbasaur weighs 69 kg | `weight` is hectograms, `height` is decimetres |
 | Description renders with visible artefacts | `flavor_text` contains literal `\n` and `\f` |
 | Eevee shows one evolution | The chain is a recursive tree, not a list — 8 branches |
-| Coverage gate fails with zero new issues | Editing one line inside pre-existing duplicated code counts against `new_duplicated_lines_density` |
+| `BC3` fails on a class you thought was generic | It reached into a context. The shared kernel depends on nothing — move it into the context that needs it |
+| An ArchUnit layer rule passes but asserts nothing | It was written against an **absolute** package (`com.elatusdev.pokedex.application..`). Layers live inside contexts — use `..application..` |
+| `make mutation` reports success suspiciously fast | PIT's `targetClasses` matched no classes. The glob is `com.elatusdev.pokedex.*.domain.*` — the wildcard is the context |
+| A class "disappeared" after a refactor | Check the import before assuming deletion. The tree is context-first, so `domain.model.Pokemon` is now `pokedex.domain.model.Pokemon` |
 | `make verify` fails at the component tier | Testcontainers needs a running Docker daemon. The build fails rather than skips, deliberately |
 | A consumer breaks after a spec change | It pinned an older contract version. Release, and let it adopt deliberately |
 

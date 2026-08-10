@@ -48,6 +48,9 @@ the property it was asserting, and the build stays green while it does.
 | | `N3` | `*Repository` port in `..domain.port..`; adapter in `..infrastructure.persistence..` |
 | | `N4` | `*DataModel` lives in `..infrastructure.persistence.model..` |
 | | `N5` | Domain exceptions are `RuntimeException` subclasses in `..domain.exception..`; no `*Service` inside `usecase` |
+| | `N6` | Everything in `..web.dto..` ends `DTO`, **and** no `*DTO` exists outside it |
+| | `N7` | No `..domain..` class ends `DTO`, `Dto`, `DataModel`, `Entity`, `Request`, or `Response` |
+| | `N9` | `..port..` holds only interfaces and carrier records; `*Adapter` is in `..infrastructure..` and implements a port |
 | **I/O containment** | `IO1` | `EntityManager`, `JdbcTemplate`, `JpaRepository` only under `..infrastructure..` |
 | | `IO2` | `RestClient` only under `..infrastructure.pokeapi..` |
 | **Immutability** | `IMF1` | Every class in `..domain.vo..` is a record or has only final fields |
@@ -74,8 +77,11 @@ dependency, not suppress the rule**:
 | Violation | Usual cause | Fix |
 |---|---|---|
 | `L2` — domain depends on Spring | An `@Service` or `@Entity` annotation crept into a domain class | Move the class to `infrastructure`, or define a port |
-| `L4` — use case imports Spring Web | A use case returns `ResponseEntity` or reads `HttpStatus` | Throw a domain exception; let `GlobalExceptionHandler` map it |
+| `L4` — use case imports Spring Web | A use case returns `ResponseEntity` or reads `HttpStatus` | Throw a domain exception; let the context's advice map it |
 | `N1`/`N2` — wrong package | A class was created next to its collaborator instead of in its layer | Move it |
+| `N6` — a `*DTO` outside `web/dto` | A wire type was hand-written rather than generated from the contract | Add it to the spec and regenerate. Never hand-write a DTO |
+| `N7` — a suffixed domain class | A projection leaked inward, or the three representations were confused | The domain type is the **unsuffixed** one. Rename it, or move it to the layer it belongs in |
+| `N9` — an `*Adapter` implementing no port | The class adapts nothing; the name is aspirational | Either give it a port to implement, or stop calling it an adapter |
 | `IO1` — `EntityManager` outside infrastructure | A test or use case reached for the DB directly | Go through the repository port |
 | `OA1` — controller does not implement `*Api` | Someone hand-wrote an endpoint | Add it to the spec and regenerate |
 | `CY1` — package cycle | Two packages reference each other | Extract the shared type, usually into `domain` |
