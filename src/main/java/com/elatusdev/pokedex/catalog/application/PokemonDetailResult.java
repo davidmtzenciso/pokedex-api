@@ -1,5 +1,6 @@
 package com.elatusdev.pokedex.catalog.application;
+import com.elatusdev.pokedex.catalog.domain.CatalogPokemon;
 
-import com.elatusdev.pokedex.pokedex.domain.Pokemon;
 
-public record PokemonDetailResult(Pokemon pokemon, boolean stale) {}
+
+public record PokemonDetailResult(CatalogPokemon pokemon, boolean stale) {}

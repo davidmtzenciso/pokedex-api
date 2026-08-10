@@ -1,4 +1,4 @@
-package com.elatusdev.pokedex.pokedex.domain;
+package com.elatusdev.pokedex.shared.domain;
 
 public enum NameSource {
     UPSTREAM,

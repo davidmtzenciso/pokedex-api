@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.elatusdev.pokedex.catalog.domain.UpstreamUnavailableException;
 import com.elatusdev.pokedex.testsupport.InMemoryCachePort;
-import com.elatusdev.pokedex.pokedex.domain.Pokemon;
 import com.elatusdev.pokedex.catalog.domain.CatalogPage;
 import com.elatusdev.pokedex.shared.domain.PokeApiId;
 import com.elatusdev.pokedex.shared.domain.PokemonName;
@@ -32,6 +31,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import com.elatusdev.pokedex.testsupport.PokeApiFixtures;
+import com.elatusdev.pokedex.catalog.domain.CatalogPokemon;
 
 class PokeApiCatalogAdapterComponentTest {
 
@@ -92,7 +92,7 @@ class PokeApiCatalogAdapterComponentTest {
     void should_issue_one_plus_two_n_upstream_calls_for_a_cold_page() {
         stubCatalogue();
 
-        List<Pokemon> rows = adapter.fetchPage(0, 10).rows();
+        List<CatalogPokemon> rows = adapter.fetchPage(0, 10).rows();
 
         assertThat(rows).hasSize(10);
         assertThat(upstream.getAllServeEvents()).hasSize(21);
@@ -118,10 +118,10 @@ class PokeApiCatalogAdapterComponentTest {
     @Test
     void should_issue_zero_upstream_calls_when_the_page_is_already_warm() {
         stubCatalogue();
-        List<Pokemon> cold = adapter.fetchPage(0, 10).rows();
+        List<CatalogPokemon> cold = adapter.fetchPage(0, 10).rows();
         upstream.resetRequests();
 
-        List<Pokemon> warm = adapter.fetchPage(0, 10).rows();
+        List<CatalogPokemon> warm = adapter.fetchPage(0, 10).rows();
 
         assertThat(upstream.getAllServeEvents()).isEmpty();
         assertThat(warm).hasSize(cold.size());
@@ -180,7 +180,7 @@ class PokeApiCatalogAdapterComponentTest {
         stubCatalogue();
         upstream.stubFor(get(urlPathEqualTo("/pokemon/4")).willReturn(aResponse().withStatus(500)));
 
-        List<Pokemon> rows = adapter.fetchPage(0, 10).rows();
+        List<CatalogPokemon> rows = adapter.fetchPage(0, 10).rows();
 
         assertThat(rows).hasSize(9);
     }
@@ -189,7 +189,7 @@ class PokeApiCatalogAdapterComponentTest {
     void should_fetch_one_pokemon_with_its_evolution_chain_by_id() {
         stubCatalogue();
 
-        Optional<Pokemon> found = adapter.fetchById(PokeApiId.of(1));
+        Optional<CatalogPokemon> found = adapter.fetchById(PokeApiId.of(1));
 
         assertThat(found).isPresent();
         assertThat(found.get().replicated().name()).isEqualTo(new PokemonName("bulbasaur"));

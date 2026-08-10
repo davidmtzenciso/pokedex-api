@@ -2,8 +2,8 @@ package com.elatusdev.pokedex.pokedex.interfaces;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.elatusdev.pokedex.pokedex.domain.LocalizedName;
-import com.elatusdev.pokedex.pokedex.domain.NameSource;
+import com.elatusdev.pokedex.shared.domain.LocalizedName;
+import com.elatusdev.pokedex.shared.domain.NameSource;
 import com.elatusdev.pokedex.pokedex.domain.Pokemon;
 import com.elatusdev.pokedex.pokedex.domain.ProprietaryFields;
 import com.elatusdev.pokedex.pokedex.domain.ReplicationState;

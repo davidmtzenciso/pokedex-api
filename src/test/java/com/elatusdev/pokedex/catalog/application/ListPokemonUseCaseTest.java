@@ -11,11 +11,9 @@ import static org.mockito.Mockito.when;
 
 import com.elatusdev.pokedex.shared.domain.InvalidPaginationException;
 import com.elatusdev.pokedex.catalog.domain.UpstreamUnavailableException;
-import com.elatusdev.pokedex.pokedex.domain.Pokemon;
-import com.elatusdev.pokedex.pokedex.domain.ReplicatedFields;
+import com.elatusdev.pokedex.shared.domain.ReplicatedFields;
 import com.elatusdev.pokedex.catalog.domain.CatalogPage;
 import com.elatusdev.pokedex.catalog.domain.PokemonCatalog;
-import com.elatusdev.pokedex.pokedex.domain.PokemonRepository;
 import com.elatusdev.pokedex.shared.domain.Category;
 import com.elatusdev.pokedex.shared.domain.Height;
 import com.elatusdev.pokedex.shared.domain.Mass;
@@ -27,15 +25,17 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import com.elatusdev.pokedex.catalog.domain.CatalogPokemon;
+import com.elatusdev.pokedex.catalog.domain.LocalReplica;
 
 class ListPokemonUseCaseTest {
 
     private final PokemonCatalog catalog = mock(PokemonCatalog.class);
-    private final PokemonRepository repository = mock(PokemonRepository.class);
+    private final LocalReplica repository = mock(LocalReplica.class);
     private final ListPokemonUseCase useCase = new ListPokemonUseCase(catalog, repository, new UpstreamOutagePolicy());
 
-    private static Pokemon row(String name) {
-        return Pokemon.pending(
+    private static CatalogPokemon row(String name) {
+        return CatalogPokemon.upstream(
                 PokeApiId.of(1),
                 new ReplicatedFields(
                         new PokemonName(name),

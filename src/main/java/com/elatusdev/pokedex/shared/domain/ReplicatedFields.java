@@ -1,12 +1,5 @@
-package com.elatusdev.pokedex.pokedex.domain;
+package com.elatusdev.pokedex.shared.domain;
 
-import com.elatusdev.pokedex.shared.domain.InvalidPokemonDataException;
-import com.elatusdev.pokedex.shared.domain.Category;
-import com.elatusdev.pokedex.shared.domain.Description;
-import com.elatusdev.pokedex.shared.domain.Height;
-import com.elatusdev.pokedex.shared.domain.Mass;
-import com.elatusdev.pokedex.shared.domain.PokemonName;
-import com.elatusdev.pokedex.shared.domain.Sprite;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;

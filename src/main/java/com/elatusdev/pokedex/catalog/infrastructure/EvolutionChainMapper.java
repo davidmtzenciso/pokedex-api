@@ -1,6 +1,6 @@
 package com.elatusdev.pokedex.catalog.infrastructure;
 
-import com.elatusdev.pokedex.pokedex.domain.EvolutionLink;
+import com.elatusdev.pokedex.shared.domain.EvolutionLink;
 import com.elatusdev.pokedex.shared.domain.PokeApiId;
 import java.util.ArrayList;
 import java.util.List;

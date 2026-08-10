@@ -18,6 +18,12 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import com.elatusdev.pokedex.shared.domain.ReplicatedFields;
+import com.elatusdev.pokedex.shared.domain.PokemonType;
+import com.elatusdev.pokedex.shared.domain.PokemonStat;
+import com.elatusdev.pokedex.shared.domain.PokemonAbility;
+import com.elatusdev.pokedex.shared.domain.NameSource;
+import com.elatusdev.pokedex.shared.domain.LocalizedName;
 
 class PokemonTest {
 

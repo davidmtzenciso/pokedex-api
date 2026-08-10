@@ -1,13 +1,13 @@
 package com.elatusdev.pokedex.catalog.application;
 
 import com.elatusdev.pokedex.shared.domain.InvalidPaginationException;
-import com.elatusdev.pokedex.pokedex.domain.Pokemon;
 import com.elatusdev.pokedex.catalog.domain.CatalogPage;
 import com.elatusdev.pokedex.catalog.domain.PokemonCatalog;
-import com.elatusdev.pokedex.pokedex.domain.PokemonRepository;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
+import com.elatusdev.pokedex.catalog.domain.CatalogPokemon;
+import com.elatusdev.pokedex.catalog.domain.LocalReplica;
 
 // Deliberately NOT @Transactional: the catalogue call is remote I/O, and holding a database
 // transaction open across it is the pattern that exhausts the pool under a slow upstream.
@@ -18,11 +18,11 @@ public class ListPokemonUseCase {
     public static final int MAX_SIZE = 100;
 
     private final PokemonCatalog catalog;
-    private final PokemonRepository repository;
+    private final LocalReplica repository;
     private final UpstreamOutagePolicy outagePolicy;
 
     public ListPokemonUseCase(
-            PokemonCatalog catalog, PokemonRepository repository, UpstreamOutagePolicy outagePolicy) {
+            PokemonCatalog catalog, LocalReplica repository, UpstreamOutagePolicy outagePolicy) {
         this.catalog = catalog;
         this.repository = repository;
         this.outagePolicy = outagePolicy;
@@ -41,7 +41,7 @@ public class ListPokemonUseCase {
     // AC-US01-5 and AC-US01-6 — a stale answer beats no answer, but only when there is
     // something local to serve
     private Optional<PokemonPageResult> fromReplica(int page, int size) {
-        List<Pokemon> local = repository.findPage(page, size);
+        List<CatalogPokemon> local = repository.findPage(page, size);
         return local.isEmpty()
                 ? Optional.empty()
                 : Optional.of(new PokemonPageResult(local, page, size, repository.count(), true));

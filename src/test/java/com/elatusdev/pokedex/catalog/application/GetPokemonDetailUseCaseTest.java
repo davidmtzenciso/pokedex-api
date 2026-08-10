@@ -12,10 +12,8 @@ import static org.mockito.Mockito.when;
 import com.elatusdev.pokedex.shared.domain.InvalidPokemonDataException;
 import com.elatusdev.pokedex.catalog.domain.PokemonNotFoundUpstreamException;
 import com.elatusdev.pokedex.catalog.domain.UpstreamUnavailableException;
-import com.elatusdev.pokedex.pokedex.domain.Pokemon;
-import com.elatusdev.pokedex.pokedex.domain.ReplicatedFields;
+import com.elatusdev.pokedex.shared.domain.ReplicatedFields;
 import com.elatusdev.pokedex.catalog.domain.PokemonCatalog;
-import com.elatusdev.pokedex.pokedex.domain.PokemonRepository;
 import com.elatusdev.pokedex.shared.domain.Category;
 import com.elatusdev.pokedex.shared.domain.Height;
 import com.elatusdev.pokedex.shared.domain.Mass;
@@ -27,16 +25,18 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import com.elatusdev.pokedex.catalog.domain.CatalogPokemon;
+import com.elatusdev.pokedex.catalog.domain.LocalReplica;
 
 class GetPokemonDetailUseCaseTest {
 
     private final PokemonCatalog catalog = mock(PokemonCatalog.class);
-    private final PokemonRepository repository = mock(PokemonRepository.class);
+    private final LocalReplica repository = mock(LocalReplica.class);
     private final GetPokemonDetailUseCase useCase =
             new GetPokemonDetailUseCase(catalog, repository, new UpstreamOutagePolicy());
 
-    private static Pokemon bulbasaur() {
-        return Pokemon.pending(
+    private static CatalogPokemon bulbasaur() {
+        return CatalogPokemon.upstream(
                 PokeApiId.of(1),
                 new ReplicatedFields(
                         new PokemonName("bulbasaur"),

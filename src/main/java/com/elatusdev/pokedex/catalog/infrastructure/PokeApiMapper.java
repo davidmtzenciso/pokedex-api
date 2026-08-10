@@ -1,14 +1,13 @@
 package com.elatusdev.pokedex.catalog.infrastructure;
 
 import com.elatusdev.pokedex.shared.domain.InvalidPokemonDataException;
-import com.elatusdev.pokedex.pokedex.domain.EvolutionLink;
-import com.elatusdev.pokedex.pokedex.domain.LocalizedName;
-import com.elatusdev.pokedex.pokedex.domain.NameSource;
-import com.elatusdev.pokedex.pokedex.domain.Pokemon;
-import com.elatusdev.pokedex.pokedex.domain.PokemonAbility;
-import com.elatusdev.pokedex.pokedex.domain.PokemonStat;
-import com.elatusdev.pokedex.pokedex.domain.PokemonType;
-import com.elatusdev.pokedex.pokedex.domain.ReplicatedFields;
+import com.elatusdev.pokedex.shared.domain.EvolutionLink;
+import com.elatusdev.pokedex.shared.domain.LocalizedName;
+import com.elatusdev.pokedex.shared.domain.NameSource;
+import com.elatusdev.pokedex.shared.domain.PokemonAbility;
+import com.elatusdev.pokedex.shared.domain.PokemonStat;
+import com.elatusdev.pokedex.shared.domain.PokemonType;
+import com.elatusdev.pokedex.shared.domain.ReplicatedFields;
 import com.elatusdev.pokedex.shared.domain.Category;
 import com.elatusdev.pokedex.shared.domain.Description;
 import com.elatusdev.pokedex.shared.domain.Height;
@@ -19,6 +18,7 @@ import com.elatusdev.pokedex.shared.domain.Sprite;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import com.elatusdev.pokedex.catalog.domain.CatalogPokemon;
 
 // The one place that knows PokeAPI is awkward, so nothing downstream has to. Every
 // transformation here is a documented IAR entry.
@@ -26,9 +26,9 @@ public class PokeApiMapper {
 
     private static final String ENGLISH = "en";
 
-    public Pokemon toPokemon(
+    public CatalogPokemon toPokemon(
             PokeApiPokemonResponse pokemon, PokeApiSpeciesResponse species, List<EvolutionLink> evolution) {
-        return Pokemon.pending(PokeApiId.of(pokemon.id()), toReplicatedFields(pokemon, species, evolution));
+        return CatalogPokemon.upstream(PokeApiId.of(pokemon.id()), toReplicatedFields(pokemon, species, evolution));
     }
 
     public ReplicatedFields toReplicatedFields(

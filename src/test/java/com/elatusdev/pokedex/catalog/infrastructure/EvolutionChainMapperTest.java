@@ -2,7 +2,7 @@ package com.elatusdev.pokedex.catalog.infrastructure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.elatusdev.pokedex.pokedex.domain.EvolutionLink;
+import com.elatusdev.pokedex.shared.domain.EvolutionLink;
 import com.elatusdev.pokedex.shared.domain.PokeApiId;
 import java.util.ArrayDeque;
 import java.util.Deque;

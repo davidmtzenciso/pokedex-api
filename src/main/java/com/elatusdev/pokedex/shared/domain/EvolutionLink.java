@@ -1,7 +1,5 @@
-package com.elatusdev.pokedex.pokedex.domain;
+package com.elatusdev.pokedex.shared.domain;
 
-import com.elatusdev.pokedex.shared.domain.InvalidPokemonDataException;
-import com.elatusdev.pokedex.shared.domain.PokeApiId;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;

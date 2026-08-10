@@ -1,6 +1,6 @@
 package com.elatusdev.pokedex.pokedex.interfaces;
 
-import com.elatusdev.pokedex.pokedex.domain.NameSource;
+import com.elatusdev.pokedex.shared.domain.NameSource;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

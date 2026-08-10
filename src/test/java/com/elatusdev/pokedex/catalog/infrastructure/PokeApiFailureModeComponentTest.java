@@ -11,7 +11,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.elatusdev.pokedex.catalog.domain.UpstreamTimeoutException;
 import com.elatusdev.pokedex.catalog.domain.UpstreamUnavailableException;
 import com.elatusdev.pokedex.testsupport.InMemoryCachePort;
-import com.elatusdev.pokedex.pokedex.domain.Pokemon;
 import com.elatusdev.pokedex.catalog.domain.CatalogPage;
 import com.elatusdev.pokedex.shared.domain.PokeApiId;
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -24,6 +23,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import com.elatusdev.pokedex.testsupport.PokeApiFixtures;
+import com.elatusdev.pokedex.catalog.domain.CatalogPokemon;
 
 // Every row of the upstream failure matrix has a defined outcome, and each one occurs in
 // production. Testing only the happy path here is the whole reason WU-US01-A calls this out.
@@ -72,7 +72,7 @@ class PokeApiFailureModeComponentTest {
     void should_map_a_real_recorded_payload_into_a_complete_row() {
         stubHappyPage();
 
-        List<Pokemon> rows = adapter.fetchPage(0, 10).rows();
+        List<CatalogPokemon> rows = adapter.fetchPage(0, 10).rows();
 
         assertThat(rows).hasSize(10);
         assertThat(rows.getFirst().replicated().category()).isPresent();
