@@ -214,3 +214,29 @@ shallower. Two needed more than a rename:
   defined as not having. That exposed `Pokemon` as a mutable aggregate (`addTag` reassigns
   fields); it is skipped because it has identity, not because it was allowlisted, and
   whether it should be immutable is a design question for the sync work units.
+
+
+## Amendment — the interfaces ring
+
+Three directories were one too few. Each context now carries the four Clean Architecture
+rings: `domain`, `application`, `interfaces`, `infrastructure`.
+
+The split that matters is between the two outer rings. **`interfaces`** holds adapters —
+controllers, exception advices, repository adapters, Spring Data interfaces, `*DataModel`
+entities and persistence mappers: the code that translates between the application and
+something outside it. **`infrastructure`** holds frameworks and drivers — Spring
+configuration, `@ConfigurationProperties`, servlet filters, and technology clients such as
+the ES256 issuer, the Redis session store, BCrypt and the PokeAPI client.
+
+The directory is `interfaces` and not `interface` because `interface` is a Java keyword and
+cannot appear in a package name.
+
+`pokedex/infrastructure` is empty as a result — that context is persistence and domain only
+— and disappears rather than being kept as a placeholder. It returns when something in it
+needs a framework.
+
+Rules repointed: N2 (controllers → `..interfaces..`), N3 (repository port in `..domain..`,
+adapter in `..interfaces..`), N4 (`*DataModel` → `..interfaces..`), N9 (adapters in either
+outer ring), IO1 (the persistence API is confined to `..infrastructure..` **and**
+`..interfaces..`), L1 and L2 extended to treat `interfaces` as an outer layer the
+application and domain may not depend on.

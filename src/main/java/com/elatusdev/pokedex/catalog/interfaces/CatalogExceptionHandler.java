@@ -1,4 +1,4 @@
-package com.elatusdev.pokedex.catalog.infrastructure;
+package com.elatusdev.pokedex.catalog.interfaces;
 
 import com.elatusdev.pokedex.shared.domain.InvalidPaginationException;
 import com.elatusdev.pokedex.catalog.domain.PokemonNotFoundUpstreamException;

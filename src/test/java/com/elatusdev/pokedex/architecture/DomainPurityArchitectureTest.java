@@ -24,7 +24,7 @@ class DomainPurityArchitectureTest {
     // relative, not absolute: every context carries its own application/infrastructure/web,
     // so com.elatusdev.pokedex.application.. no longer names anything — ADR-0013
     private static final String[] OTHER_LAYERS = {
-        "..application..", "..infrastructure..",
+        "..application..", "..infrastructure..", "..interfaces..",
     };
 
     // L2 is the whole reason this suite is not optional. One Maven module puts every

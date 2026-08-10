@@ -1,4 +1,4 @@
-package com.elatusdev.pokedex.pokedex.infrastructure;
+package com.elatusdev.pokedex.pokedex.interfaces;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

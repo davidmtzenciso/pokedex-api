@@ -1,4 +1,4 @@
-package com.elatusdev.pokedex.catalog.infrastructure;
+package com.elatusdev.pokedex.catalog.interfaces;
 
 import com.elatusdev.pokedex.catalog.application.PokemonDetailResult;
 import com.elatusdev.pokedex.catalog.application.PokemonPageResult;

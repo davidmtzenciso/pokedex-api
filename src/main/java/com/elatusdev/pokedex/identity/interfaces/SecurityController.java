@@ -1,4 +1,4 @@
-package com.elatusdev.pokedex.identity.infrastructure;
+package com.elatusdev.pokedex.identity.interfaces;
 
 import com.elatusdev.pokedex.identity.application.AuthenticateUserUseCase;
 import com.elatusdev.pokedex.identity.application.GetCurrentUserUseCase;
@@ -20,6 +20,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+import com.elatusdev.pokedex.identity.infrastructure.Principals;
 
 @RestController
 public class SecurityController implements SecurityApi {

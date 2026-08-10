@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
-import com.elatusdev.pokedex.identity.infrastructure.UserDataModel;
+import com.elatusdev.pokedex.identity.interfaces.UserDataModel;
 
 // This context reaching a started state is itself the assertion: ddl-auto is validate, so
 // any column the mapping and the migration disagree about fails the refresh. The tests below

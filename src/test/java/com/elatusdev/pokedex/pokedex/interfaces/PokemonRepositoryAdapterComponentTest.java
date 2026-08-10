@@ -1,4 +1,4 @@
-package com.elatusdev.pokedex.pokedex.infrastructure;
+package com.elatusdev.pokedex.pokedex.interfaces;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

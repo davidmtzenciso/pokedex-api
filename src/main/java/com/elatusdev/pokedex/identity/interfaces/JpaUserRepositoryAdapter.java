@@ -1,4 +1,4 @@
-package com.elatusdev.pokedex.identity.infrastructure;
+package com.elatusdev.pokedex.identity.interfaces;
 
 import com.elatusdev.pokedex.identity.domain.User;
 import com.elatusdev.pokedex.identity.domain.UserRepository;

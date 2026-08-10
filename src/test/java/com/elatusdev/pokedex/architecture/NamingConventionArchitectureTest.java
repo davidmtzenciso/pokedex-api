@@ -10,8 +10,8 @@ import com.tngtech.archunit.lang.SimpleConditionEvent;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
-import com.elatusdev.pokedex.pokedex.infrastructure.PokemonDataModel;
-import com.elatusdev.pokedex.pokedex.infrastructure.JpaPokemonRepositoryAdapter;
+import com.elatusdev.pokedex.pokedex.interfaces.PokemonDataModel;
+import com.elatusdev.pokedex.pokedex.interfaces.JpaPokemonRepositoryAdapter;
 import com.elatusdev.pokedex.pokedex.domain.PokemonRepository;
 import com.elatusdev.pokedex.pokedex.domain.Pokemon;
 import com.elatusdev.pokedex.catalog.domain.CatalogPage;
@@ -33,7 +33,7 @@ class NamingConventionArchitectureTest {
     void should_reside_in_web_controller_when_the_class_is_a_controller() {
         classes()
                 .that().haveSimpleNameEndingWith("Controller")
-                .should().resideInAPackage("..infrastructure..")
+                .should().resideInAPackage("..interfaces..")
                 .because("N2 — a class's package tells you what it may touch")
                 .allowEmptyShould(true)
                 .check(ProjectClasses.production());
@@ -43,8 +43,8 @@ class NamingConventionArchitectureTest {
     void should_reside_in_a_port_or_persistence_package_when_the_class_is_a_repository() {
         classes()
                 .that().haveSimpleNameEndingWith("Repository")
-                .should().resideInAnyPackage("..domain..", "..infrastructure..")
-                .because("N3 — the port is domain-owned, the adapter is infrastructure-owned, and nothing else is a repository")
+                .should().resideInAnyPackage("..domain..", "..interfaces..")
+                .because("N3 — the port is domain-owned, the adapter belongs to the interfaces ring, and nothing else is a repository")
                 .allowEmptyShould(true)
                 .check(ProjectClasses.production());
     }
@@ -63,8 +63,8 @@ class NamingConventionArchitectureTest {
     void should_reside_in_persistence_model_when_the_class_is_a_data_model() {
         classes()
                 .that().haveSimpleNameEndingWith("DataModel")
-                .should().resideInAPackage("..infrastructure..")
-                .because("N4 — persistence types stay behind the repository adapter")
+                .should().resideInAPackage("..interfaces..")
+                .because("N4 — persistence types sit in the interfaces ring, behind the repository adapter")
                 .allowEmptyShould(true)
                 .check(ProjectClasses.production());
     }
@@ -155,8 +155,8 @@ class NamingConventionArchitectureTest {
     void should_reside_in_infrastructure_when_the_class_is_an_adapter() {
         classes()
                 .that().haveSimpleNameEndingWith("Adapter")
-                .should().resideInAPackage("..infrastructure..")
-                .because("N9 — an adapter is where the framework lives, and the framework lives only in infrastructure")
+                .should().resideInAnyPackage("..infrastructure..", "..interfaces..")
+                .because("N9 — an adapter belongs to an outer ring: persistence and HTTP in interfaces, technology clients in infrastructure")
                 .allowEmptyShould(true)
                 .check(ProjectClasses.production());
     }

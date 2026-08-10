@@ -17,7 +17,7 @@ class LayerArchitectureTest {
     void should_reject_web_or_infrastructure_dependencies_when_the_class_is_in_application() {
         noClasses()
                 .that().resideInAPackage("..application..")
-                .should().dependOnClassesThat().resideInAnyPackage("..infrastructure..")
+                .should().dependOnClassesThat().resideInAnyPackage("..infrastructure..", "..interfaces..")
                 .because("L1 — application is inside the dependency rule; adapters depend on it, never the reverse")
                 .allowEmptyShould(true)
                 .check(ProjectClasses.production());

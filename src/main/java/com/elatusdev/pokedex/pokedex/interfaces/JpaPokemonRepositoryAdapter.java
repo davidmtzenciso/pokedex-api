@@ -1,4 +1,4 @@
-package com.elatusdev.pokedex.pokedex.infrastructure;
+package com.elatusdev.pokedex.pokedex.interfaces;
 
 import com.elatusdev.pokedex.pokedex.domain.Pokemon;
 import com.elatusdev.pokedex.pokedex.domain.PokemonRepository;

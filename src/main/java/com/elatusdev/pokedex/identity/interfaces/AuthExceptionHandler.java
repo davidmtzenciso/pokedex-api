@@ -1,4 +1,4 @@
-package com.elatusdev.pokedex.identity.infrastructure;
+package com.elatusdev.pokedex.identity.interfaces;
 
 import com.elatusdev.pokedex.identity.domain.InvalidCredentialsException;
 import com.elatusdev.pokedex.identity.domain.InvalidTokenException;
@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import com.elatusdev.pokedex.catalog.infrastructure.CatalogExceptionHandler;
+import com.elatusdev.pokedex.catalog.interfaces.CatalogExceptionHandler;
 
 // The WF-AUTH rows of the §9.5 matrix. One advice per context, mirroring
 // CatalogExceptionHandler: an advice that maps another context's exceptions would make

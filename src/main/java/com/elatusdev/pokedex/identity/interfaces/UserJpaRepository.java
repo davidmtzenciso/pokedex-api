@@ -1,4 +1,4 @@
-package com.elatusdev.pokedex.identity.infrastructure;
+package com.elatusdev.pokedex.identity.interfaces;
 
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
