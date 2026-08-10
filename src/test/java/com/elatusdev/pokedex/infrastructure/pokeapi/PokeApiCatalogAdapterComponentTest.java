@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.elatusdev.pokedex.domain.exception.UpstreamUnavailableException;
+import com.elatusdev.pokedex.infrastructure.cache.InMemoryCachePort;
 import com.elatusdev.pokedex.domain.model.Pokemon;
 import com.elatusdev.pokedex.domain.vo.PokeApiId;
 import com.elatusdev.pokedex.domain.vo.PokemonName;
@@ -37,6 +38,7 @@ class PokeApiCatalogAdapterComponentTest {
     private WireMockServer upstream;
     private InFlightProbe probe;
     private PokeApiCatalogAdapter adapter;
+    private InMemoryCachePort cache;
 
     @BeforeEach
     void startUpstream() {
@@ -52,8 +54,9 @@ class PokeApiCatalogAdapterComponentTest {
                 MAX_CONCURRENCY,
                 Duration.ofHours(24),
                 50);
+        cache = new InMemoryCachePort();
         adapter = new PokeApiCatalogAdapter(
-                new PokeApiClient(properties), new PokeApiMapper(), new EvolutionChainMapper(), properties);
+                new PokeApiClient(properties), new PokeApiMapper(), new EvolutionChainMapper(), properties, cache);
     }
 
     @AfterEach
@@ -61,12 +64,18 @@ class PokeApiCatalogAdapterComponentTest {
         upstream.stop();
     }
 
+    // Each row gets its OWN species, as upstream really does. Serving one fixture for every
+    // id would let the cache collapse ten species calls into one and quietly hide the 1 + 2N
+    // cost this test exists to pin.
     private void stubCatalogue() {
         upstream.stubFor(get(urlPathEqualTo("/pokemon")).willReturn(json(PokeApiFixtures.raw("pokemon-list.json"))));
-        upstream.stubFor(
-                get(urlPathMatching("/pokemon/\\d+")).willReturn(json(PokeApiFixtures.raw("pokemon-1.json"))));
-        upstream.stubFor(get(urlPathMatching("/pokemon-species/\\d+"))
-                .willReturn(json(PokeApiFixtures.raw("species-1.json"))));
+        for (int id = 1; id <= 10; id++) {
+            upstream.stubFor(get(urlPathEqualTo("/pokemon/" + id)).willReturn(json(PokeApiFixtures.raw("pokemon-1.json")
+                    .replace("\"id\": 1,", "\"id\": " + id + ",")
+                    .replace("pokemon-species/1/", "pokemon-species/" + id + "/"))));
+            upstream.stubFor(get(urlPathEqualTo("/pokemon-species/" + id))
+                    .willReturn(json(PokeApiFixtures.raw("species-1.json"))));
+        }
         upstream.stubFor(get(urlPathMatching("/evolution-chain/\\d+"))
                 .willReturn(json(PokeApiFixtures.raw("evolution-chain-1.json"))));
     }
@@ -100,6 +109,46 @@ class PokeApiCatalogAdapterComponentTest {
         adapter.fetchPage(0, 10);
 
         assertThat(probe.peak()).isEqualTo(MAX_CONCURRENCY);
+    }
+
+    // AC-US01-4 — the whole reason the cache is load-bearing rather than an optimisation:
+    // it turns 21 upstream calls into none
+    @Test
+    void should_issue_zero_upstream_calls_when_the_page_is_already_warm() {
+        stubCatalogue();
+        List<Pokemon> cold = adapter.fetchPage(0, 10);
+        upstream.resetRequests();
+
+        List<Pokemon> warm = adapter.fetchPage(0, 10);
+
+        assertThat(upstream.getAllServeEvents()).isEmpty();
+        assertThat(warm).hasSize(cold.size());
+        assertThat(warm.getFirst().replicated().name()).isEqualTo(cold.getFirst().replicated().name());
+    }
+
+    @Test
+    void should_store_every_upstream_resource_under_its_own_key_with_the_configured_ttl() {
+        stubCatalogue();
+
+        adapter.fetchPage(0, 10);
+
+        assertThat(cache.ttlOf(PokeApiCacheKeys.page(0, 10))).contains(Duration.ofHours(24));
+        assertThat(cache.ttlOf(PokeApiCacheKeys.pokemon(PokeApiId.of(1)))).contains(Duration.ofHours(24));
+        assertThat(cache.ttlOf(PokeApiCacheKeys.species(1))).contains(Duration.ofHours(24));
+    }
+
+    // B2 — a re-synced record must not stay shadowed by a cached page it no longer matches
+    @Test
+    void should_go_back_upstream_for_the_listing_after_the_page_keys_are_evicted() {
+        stubCatalogue();
+        adapter.fetchPage(0, 10);
+        upstream.resetRequests();
+
+        cache.evictByPrefix(PokeApiCacheKeys.PAGE_PREFIX);
+        adapter.fetchPage(0, 10);
+
+        upstream.verify(1, getRequestedFor(urlPathEqualTo("/pokemon")));
+        upstream.verify(0, getRequestedFor(urlPathMatching("/pokemon/\\d+")));
     }
 
     @Test

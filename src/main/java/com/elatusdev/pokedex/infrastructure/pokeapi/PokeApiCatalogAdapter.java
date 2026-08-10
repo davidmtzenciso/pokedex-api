@@ -5,6 +5,7 @@ import com.elatusdev.pokedex.domain.exception.UpstreamTimeoutException;
 import com.elatusdev.pokedex.domain.exception.UpstreamUnavailableException;
 import com.elatusdev.pokedex.domain.model.EvolutionLink;
 import com.elatusdev.pokedex.domain.model.Pokemon;
+import com.elatusdev.pokedex.domain.port.CachePort;
 import com.elatusdev.pokedex.domain.port.PokemonCatalog;
 import com.elatusdev.pokedex.domain.vo.PokeApiId;
 import com.elatusdev.pokedex.domain.vo.PokemonName;
@@ -27,16 +28,19 @@ public class PokeApiCatalogAdapter implements PokemonCatalog {
     private final PokeApiMapper mapper;
     private final EvolutionChainMapper evolutionMapper;
     private final PokeApiProperties properties;
+    private final CachePort cache;
 
     public PokeApiCatalogAdapter(
             PokeApiClient client,
             PokeApiMapper mapper,
             EvolutionChainMapper evolutionMapper,
-            PokeApiProperties properties) {
+            PokeApiProperties properties,
+            CachePort cache) {
         this.client = client;
         this.mapper = mapper;
         this.evolutionMapper = evolutionMapper;
         this.properties = properties;
+        this.cache = cache;
     }
 
     @Override
@@ -61,18 +65,31 @@ public class PokeApiCatalogAdapter implements PokemonCatalog {
 
     @Override
     public Optional<Pokemon> fetchById(PokeApiId pokeApiId) {
-        return fetchDetail("/pokemon/" + pokeApiId.value());
+        return fetchDetail(String.valueOf(pokeApiId.value()));
     }
 
     @Override
     public Optional<Pokemon> fetchByName(PokemonName name) {
-        return fetchDetail("/pokemon/" + name.value());
+        return fetchDetail(name.value());
     }
 
     private PokeApiListResponse fetchListing(int page, int size) {
-        String path = "/pokemon?offset=" + ((long) page * size) + "&limit=" + size;
-        return client.get(path, PokeApiListResponse.class)
+        int offset = page * size;
+        String path = "/pokemon?offset=" + offset + "&limit=" + size;
+        return cached(PokeApiCacheKeys.page(offset, size), path, PokeApiListResponse.class)
                 .orElseThrow(() -> new UpstreamUnavailableException("pokeapi returned no listing for " + path, null));
+    }
+
+    // read-through, so a warm page costs zero upstream calls instead of 1 + 2N (AC-US01-4).
+    // A cache failure is already a miss by the time it reaches here — CachePort fails open.
+    private <T> Optional<T> cached(String key, String path, Class<T> type) {
+        Optional<T> hit = cache.get(key, type);
+        if (hit.isPresent()) {
+            return hit;
+        }
+        Optional<T> fetched = client.get(path, type);
+        fetched.ifPresent(value -> cache.put(key, value, properties.cacheTtl()));
+        return fetched;
     }
 
     // one failing row must not fail the page — the alternative is that a single upstream
@@ -91,12 +108,14 @@ public class PokeApiCatalogAdapter implements PokemonCatalog {
 
     // a list row needs no evolution chain, which is what keeps the page at 1 + 2N
     private Optional<Pokemon> summarise(PokeApiNameRef ref) {
-        return client.get("/pokemon/" + PokeApiResourceId.of(ref).value(), PokeApiPokemonResponse.class)
+        PokeApiId id = PokeApiResourceId.of(ref);
+        return cached(PokeApiCacheKeys.pokemon(id), "/pokemon/" + id.value(), PokeApiPokemonResponse.class)
                 .map(pokemon -> mapper.toPokemon(pokemon, species(pokemon), List.of()));
     }
 
-    private Optional<Pokemon> fetchDetail(String path) {
-        return client.get(path, PokeApiPokemonResponse.class).map(this::withEvolution);
+    private Optional<Pokemon> fetchDetail(String idOrName) {
+        return cached(PokeApiCacheKeys.pokemon(idOrName), "/pokemon/" + idOrName, PokeApiPokemonResponse.class)
+                .map(this::withEvolution);
     }
 
     private Pokemon withEvolution(PokeApiPokemonResponse pokemon) {
@@ -105,8 +124,9 @@ public class PokeApiCatalogAdapter implements PokemonCatalog {
     }
 
     private PokeApiSpeciesResponse species(PokeApiPokemonResponse pokemon) {
-        String path = "/pokemon-species/" + PokeApiResourceId.of(pokemon.species()).value();
-        return client.get(path, PokeApiSpeciesResponse.class)
+        int speciesId = PokeApiResourceId.of(pokemon.species()).value();
+        String path = "/pokemon-species/" + speciesId;
+        return cached(PokeApiCacheKeys.species(speciesId), path, PokeApiSpeciesResponse.class)
                 .orElseThrow(() -> new InvalidPokemonDataException("pokeapi has no species at " + path));
     }
 
@@ -114,8 +134,9 @@ public class PokeApiCatalogAdapter implements PokemonCatalog {
         if (species.evolutionChain() == null) {
             return List.of();
         }
-        String path = "/evolution-chain/" + PokeApiResourceId.of(species.evolutionChain()).value();
-        return client.get(path, PokeApiEvolutionChainResponse.class)
+        int chainId = PokeApiResourceId.of(species.evolutionChain()).value();
+        String path = "/evolution-chain/" + chainId;
+        return cached(PokeApiCacheKeys.evolution(chainId), path, PokeApiEvolutionChainResponse.class)
                 .map(evolutionMapper::flatten)
                 .orElseGet(List::of);
     }

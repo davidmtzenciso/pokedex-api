@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.elatusdev.pokedex.domain.exception.UpstreamTimeoutException;
 import com.elatusdev.pokedex.domain.exception.UpstreamUnavailableException;
+import com.elatusdev.pokedex.infrastructure.cache.InMemoryCachePort;
 import com.elatusdev.pokedex.domain.model.Pokemon;
 import com.elatusdev.pokedex.domain.vo.PokeApiId;
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -28,6 +29,7 @@ class PokeApiFailureModeComponentTest {
 
     private WireMockServer upstream;
     private PokeApiCatalogAdapter adapter;
+    private InMemoryCachePort cache;
 
     @BeforeEach
     void startUpstream() {
@@ -42,8 +44,9 @@ class PokeApiFailureModeComponentTest {
                 8,
                 Duration.ofHours(24),
                 50);
+        cache = new InMemoryCachePort();
         adapter = new PokeApiCatalogAdapter(
-                new PokeApiClient(properties), new PokeApiMapper(), new EvolutionChainMapper(), properties);
+                new PokeApiClient(properties), new PokeApiMapper(), new EvolutionChainMapper(), properties, cache);
     }
 
     @AfterEach

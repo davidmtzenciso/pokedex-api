@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.testcontainers.containers.GenericContainer;
@@ -27,12 +28,24 @@ class RedisCacheAdapterComponentTest {
     void startRedis() {
         redis = new GenericContainer<>(DockerImageName.parse("redis:7-alpine")).withExposedPorts(6379);
         redis.start();
-        connectionFactory = new LettuceConnectionFactory(
-                new RedisStandaloneConfiguration(redis.getHost(), redis.getMappedPort(6379)));
-        connectionFactory.afterPropertiesSet();
+        connectionFactory = connectionFactoryFor(redis);
         StringRedisTemplate template = new StringRedisTemplate(connectionFactory);
         template.afterPropertiesSet();
         cache = new RedisCacheAdapter(template);
+    }
+
+    // An unbounded command timeout does not fail open, it stalls: against a stopped Redis
+    // Lettuce blocked for minutes before surfacing an error. Production bounds this through
+    // spring.data.redis.timeout; the tests bound it here for the same reason.
+    private static LettuceConnectionFactory connectionFactoryFor(GenericContainer<?> container) {
+        LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
+                .commandTimeout(Duration.ofMillis(400))
+                .shutdownTimeout(Duration.ZERO)
+                .build();
+        LettuceConnectionFactory factory = new LettuceConnectionFactory(
+                new RedisStandaloneConfiguration(container.getHost(), container.getMappedPort(6379)), clientConfig);
+        factory.afterPropertiesSet();
+        return factory;
     }
 
     @AfterAll
@@ -103,9 +116,7 @@ class RedisCacheAdapterComponentTest {
         GenericContainer<?> doomed =
                 new GenericContainer<>(DockerImageName.parse("redis:7-alpine")).withExposedPorts(6379);
         doomed.start();
-        LettuceConnectionFactory factory = new LettuceConnectionFactory(
-                new RedisStandaloneConfiguration(doomed.getHost(), doomed.getMappedPort(6379)));
-        factory.afterPropertiesSet();
+        LettuceConnectionFactory factory = connectionFactoryFor(doomed);
         StringRedisTemplate template = new StringRedisTemplate(factory);
         template.afterPropertiesSet();
         RedisCacheAdapter fragile = new RedisCacheAdapter(template);
