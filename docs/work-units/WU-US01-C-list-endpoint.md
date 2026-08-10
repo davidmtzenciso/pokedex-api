@@ -6,7 +6,7 @@
 | **Parent** | [WF-US01 Pokémon Enumeration](../workflows/WF-US01-pokemon-enumeration.md) |
 | **Objective contribution** | The story's deliverable: `GET /v1/pokedex/pokemon` |
 | **Estimate** | M |
-| **Status** | not started |
+| **Status** | done |
 
 ## Objective
 
@@ -100,12 +100,26 @@ zero. Assert both upstream-failure branches.
 
 ---
 
+## Deviations, and why
+
+| # | Change | Reason |
+|---|---|---|
+| 1 | **Read-through caching lives in the catalogue adapter, not this use case.** C1 said "Ask `CachePort`; on a miss call `PokemonCatalog`" | The cache keys WU-US01-B specifies are *upstream-resource* keys — `pokeapi:pokemon:{id}`, `pokeapi:species:{id}`, `pokeapi:page:{o}:{l}`. Caching at the use case would cache mapped domain aggregates instead, losing reuse of a species across pages and forcing the aggregate to be serialisable. The observable property is unchanged and asserted: cold 21, warm 0 |
+| 2 | **`PokemonCatalog.totalCount()` removed; `fetchPage` returns `CatalogPage(rows, totalCount)`** | The upstream listing returns rows and count in one response. Two port methods meant two listing calls, so a "1 + 2N" page actually cost **22**. The component test caught it |
+| 3 | **`CatalogExceptionHandler`, not `GlobalExceptionHandler`** | Three streams run in parallel and WU-AUTH owns that file. Spring supports several advice classes; [WU-US04-B](WU-US04-B-crud-endpoints.md) folds these rows into the full handler |
+| 4 | **`UnavailableLocalReplica` is a temporary `@ConditionalOnMissingBean` stand-in** | This use case needs a `PokemonRepository` bean and the adapter is WU-US03-A. Without it the context does not start at all. Reads report "nothing stored" (so an outage propagates rather than being masked); **writes throw**. It disappears the moment the real adapter is on the context — delete the package when WU-US03-A merges |
+| 5 | **`skipDefaultInterface` dropped; only `ApiUtil.java` generated as a supporting file** | Default interface methods return 501 for operations a stream has not implemented yet, which is what lets three streams share one generated contract without one of them having to stub the other two's endpoints |
+
+`@Transactional` was **not** applied: the catalogue call is remote I/O, and holding a
+database transaction across it is what exhausts the pool under a slow upstream.
+
 ## Exit Criteria
 
-- [ ] Default page returns 10 complete rows (AC-US01-1)
-- [ ] `size=101` rejected, `size=100` accepted (AC-US01-2)
-- [ ] Cold page 21 calls, warm page 0 (AC-US01-3, AC-US01-4)
-- [ ] Both upstream-failure branches behave (AC-US01-5, AC-US01-6)
+- [x] Default page returns 10 complete rows, each with sprite, category, mass in kg and abilities (AC-US01-1)
+- [x] `size=101` rejected with `INVALID_PAGINATION` as `application/problem+json`, `size=100` accepted, `size` absent defaults to 10 (AC-US01-2)
+- [x] Cold page 21 calls, warm page 0 (AC-US01-3, AC-US01-4)
+- [x] No-replica branch returns **502**, never 500 (AC-US01-6)
+- [~] Stale-replica branch (AC-US01-5) is proven at the use-case tier; the end-to-end path needs the replica adapter from WU-US03-A
 
 ```bash
 mvn -B verify

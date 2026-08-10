@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.elatusdev.pokedex.domain.exception.UpstreamUnavailableException;
 import com.elatusdev.pokedex.infrastructure.cache.InMemoryCachePort;
 import com.elatusdev.pokedex.domain.model.Pokemon;
+import com.elatusdev.pokedex.domain.port.CatalogPage;
 import com.elatusdev.pokedex.domain.vo.PokeApiId;
 import com.elatusdev.pokedex.domain.vo.PokemonName;
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -90,7 +91,7 @@ class PokeApiCatalogAdapterComponentTest {
     void should_issue_one_plus_two_n_upstream_calls_for_a_cold_page() {
         stubCatalogue();
 
-        List<Pokemon> rows = adapter.fetchPage(0, 10);
+        List<Pokemon> rows = adapter.fetchPage(0, 10).rows();
 
         assertThat(rows).hasSize(10);
         assertThat(upstream.getAllServeEvents()).hasSize(21);
@@ -116,10 +117,10 @@ class PokeApiCatalogAdapterComponentTest {
     @Test
     void should_issue_zero_upstream_calls_when_the_page_is_already_warm() {
         stubCatalogue();
-        List<Pokemon> cold = adapter.fetchPage(0, 10);
+        List<Pokemon> cold = adapter.fetchPage(0, 10).rows();
         upstream.resetRequests();
 
-        List<Pokemon> warm = adapter.fetchPage(0, 10);
+        List<Pokemon> warm = adapter.fetchPage(0, 10).rows();
 
         assertThat(upstream.getAllServeEvents()).isEmpty();
         assertThat(warm).hasSize(cold.size());
@@ -163,10 +164,13 @@ class PokeApiCatalogAdapterComponentTest {
     }
 
     @Test
-    void should_report_the_total_upstream_count() {
+    void should_report_the_total_upstream_count_from_the_same_listing_call() {
         stubCatalogue();
 
-        assertThat(adapter.totalCount()).isEqualTo(1351);
+        CatalogPage page = adapter.fetchPage(0, 10);
+
+        assertThat(page.totalCount()).isEqualTo(1351);
+        upstream.verify(1, getRequestedFor(urlPathEqualTo("/pokemon")));
     }
 
     // one failing row must not fail the page — docs/handbook/concurrency.md
@@ -175,7 +179,7 @@ class PokeApiCatalogAdapterComponentTest {
         stubCatalogue();
         upstream.stubFor(get(urlPathEqualTo("/pokemon/4")).willReturn(aResponse().withStatus(500)));
 
-        List<Pokemon> rows = adapter.fetchPage(0, 10);
+        List<Pokemon> rows = adapter.fetchPage(0, 10).rows();
 
         assertThat(rows).hasSize(9);
     }
