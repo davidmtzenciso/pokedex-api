@@ -1,0 +1,196 @@
+{
+  "id": 1,
+  "name": "bulbasaur",
+  "genera": [
+    {
+      "genus": "たねポケモン",
+      "language": {
+        "name": "ja-hrkt",
+        "url": "https://pokeapi.co/api/v2/language/1/"
+      }
+    },
+    {
+      "genus": "씨앗포켓몬",
+      "language": {
+        "name": "ko",
+        "url": "https://pokeapi.co/api/v2/language/3/"
+      }
+    },
+    {
+      "genus": "種子寶可夢",
+      "language": {
+        "name": "zh-hant",
+        "url": "https://pokeapi.co/api/v2/language/4/"
+      }
+    },
+    {
+      "genus": "Pokémon Graine",
+      "language": {
+        "name": "fr",
+        "url": "https://pokeapi.co/api/v2/language/5/"
+      }
+    },
+    {
+      "genus": "Samen-Pokémon",
+      "language": {
+        "name": "de",
+        "url": "https://pokeapi.co/api/v2/language/6/"
+      }
+    },
+    {
+      "genus": "Pokémon Semilla",
+      "language": {
+        "name": "es",
+        "url": "https://pokeapi.co/api/v2/language/7/"
+      }
+    },
+    {
+      "genus": "Pokémon Seme",
+      "language": {
+        "name": "it",
+        "url": "https://pokeapi.co/api/v2/language/8/"
+      }
+    },
+    {
+      "genus": "Seed Pokémon",
+      "language": {
+        "name": "en",
+        "url": "https://pokeapi.co/api/v2/language/9/"
+      }
+    },
+    {
+      "genus": "たねポケモン",
+      "language": {
+        "name": "ja",
+        "url": "https://pokeapi.co/api/v2/language/11/"
+      }
+    },
+    {
+      "genus": "种子宝可梦",
+      "language": {
+        "name": "zh-hans",
+        "url": "https://pokeapi.co/api/v2/language/12/"
+      }
+    },
+    {
+      "genus": "Pokémon Semilla",
+      "language": {
+        "name": "es-419",
+        "url": "https://pokeapi.co/api/v2/language/14/"
+      }
+    }
+  ],
+  "flavor_text_entries": [
+    {
+      "flavor_text": "A strange seed was\nplanted on its\nback at birth.\fThe plant sprouts\nand grows with\nthis POKéMON.",
+      "language": {
+        "name": "en",
+        "url": "https://pokeapi.co/api/v2/language/9/"
+      },
+      "version": {
+        "name": "red",
+        "url": "https://pokeapi.co/api/v2/version/1/"
+      }
+    },
+    {
+      "flavor_text": "A strange seed was\nplanted on its\nback at birth.\fThe plant sprouts\nand grows with\nthis POKéMON.",
+      "language": {
+        "name": "en",
+        "url": "https://pokeapi.co/api/v2/language/9/"
+      },
+      "version": {
+        "name": "blue",
+        "url": "https://pokeapi.co/api/v2/version/2/"
+      }
+    }
+  ],
+  "names": [
+    {
+      "language": {
+        "name": "ja-hrkt",
+        "url": "https://pokeapi.co/api/v2/language/1/"
+      },
+      "name": "フシギダネ"
+    },
+    {
+      "language": {
+        "name": "ja-roma",
+        "url": "https://pokeapi.co/api/v2/language/2/"
+      },
+      "name": "Fushigidane"
+    },
+    {
+      "language": {
+        "name": "ko",
+        "url": "https://pokeapi.co/api/v2/language/3/"
+      },
+      "name": "이상해씨"
+    },
+    {
+      "language": {
+        "name": "zh-hant",
+        "url": "https://pokeapi.co/api/v2/language/4/"
+      },
+      "name": "妙蛙種子"
+    },
+    {
+      "language": {
+        "name": "fr",
+        "url": "https://pokeapi.co/api/v2/language/5/"
+      },
+      "name": "Bulbizarre"
+    },
+    {
+      "language": {
+        "name": "de",
+        "url": "https://pokeapi.co/api/v2/language/6/"
+      },
+      "name": "Bisasam"
+    },
+    {
+      "language": {
+        "name": "es",
+        "url": "https://pokeapi.co/api/v2/language/7/"
+      },
+      "name": "Bulbasaur"
+    },
+    {
+      "language": {
+        "name": "it",
+        "url": "https://pokeapi.co/api/v2/language/8/"
+      },
+      "name": "Bulbasaur"
+    },
+    {
+      "language": {
+        "name": "en",
+        "url": "https://pokeapi.co/api/v2/language/9/"
+      },
+      "name": "Bulbasaur"
+    },
+    {
+      "language": {
+        "name": "ja",
+        "url": "https://pokeapi.co/api/v2/language/11/"
+      },
+      "name": "フシギダネ"
+    },
+    {
+      "language": {
+        "name": "zh-hans",
+        "url": "https://pokeapi.co/api/v2/language/12/"
+      },
+      "name": "妙蛙种子"
+    },
+    {
+      "language": {
+        "name": "es-419",
+        "url": "https://pokeapi.co/api/v2/language/14/"
+      },
+      "name": "Bulbasaur"
+    }
+  ],
+  "evolution_chain": {
+    "url": "https://pokeapi.co/api/v2/evolution-chain/1/"
+  }
+}
