@@ -1,0 +1,17 @@
+# Test overrides. The keystore is the throwaway one generated into target/ by
+# scripts/generate-test-keystore.sh at generate-test-resources — it signs nothing that is
+# valid anywhere else, which is why its password can live here.
+pokedex:
+  jwt:
+    keystore-path: file:target/test-keys/pokedex-test.p12
+    keystore-password: test-keystore-not-a-secret
+    key-alias: pokedex-test
+    key-id: pokedex-test-1
+    issuer: https://pokedex.test.local
+    audience: pokedex-api
+    access-ttl: PT15M
+    refresh-ttl: P7D
+  security:
+    cors-allowed-origins: http://localhost:3000
+    login-rate-limit: 100
+    login-rate-window: PT1M
