@@ -2,8 +2,11 @@ package com.elatusdev.pokedex.catalog.interfaces;
 
 import com.elatusdev.pokedex.catalog.domain.CatalogPokemon;
 import com.elatusdev.pokedex.catalog.domain.PokemonCatalog;
+import com.elatusdev.pokedex.catalog.domain.UpstreamTimeoutException;
+import com.elatusdev.pokedex.catalog.domain.UpstreamUnavailableException;
 import com.elatusdev.pokedex.pokedex.domain.UpstreamCatalog;
 import com.elatusdev.pokedex.pokedex.domain.UpstreamPokemon;
+import com.elatusdev.pokedex.pokedex.domain.UpstreamReplicationFailedException;
 import com.elatusdev.pokedex.shared.domain.PokeApiId;
 import com.elatusdev.pokedex.shared.domain.PokemonName;
 import java.util.Optional;
@@ -29,12 +32,20 @@ public class PokedexUpstreamCatalogAdapter implements UpstreamCatalog {
 
     @Override
     public Optional<UpstreamPokemon> fetchById(PokeApiId pokeApiId) {
-        return catalog.fetchById(pokeApiId).flatMap(PokedexUpstreamCatalogAdapter::replicable);
+        try {
+            return catalog.fetchById(pokeApiId).flatMap(PokedexUpstreamCatalogAdapter::replicable);
+        } catch (UpstreamUnavailableException | UpstreamTimeoutException failure) {
+            throw new UpstreamReplicationFailedException(String.valueOf(pokeApiId.value()), failure);
+        }
     }
 
     @Override
     public Optional<UpstreamPokemon> fetchByName(PokemonName name) {
-        return catalog.fetchByName(name).flatMap(PokedexUpstreamCatalogAdapter::replicable);
+        try {
+            return catalog.fetchByName(name).flatMap(PokedexUpstreamCatalogAdapter::replicable);
+        } catch (UpstreamUnavailableException | UpstreamTimeoutException failure) {
+            throw new UpstreamReplicationFailedException(name.value(), failure);
+        }
     }
 
     private static Optional<UpstreamPokemon> replicable(CatalogPokemon fetched) {
