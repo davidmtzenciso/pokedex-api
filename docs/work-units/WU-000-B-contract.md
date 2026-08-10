@@ -21,7 +21,7 @@ On the critical path: no controller work begins until this exits green.
 
 | Input | Source | Used by |
 |---|---|---|
-| 15 operations | [WF-000 §3.2](../workflows/WF-000-foundation.md) | B1 |
+| 15 operations | [WF-000 §3.2](../workflows/WF-000-foundation.md) — **authored during this work unit; the section was referenced but missing** | B1 |
 | Error envelope | [error handling](../handbook/error-handling.md) | B2 |
 | Pagination rules | [WF-000 §3.2](../workflows/WF-000-foundation.md) | B1 |
 
@@ -93,22 +93,31 @@ operation — including 502 and 504.
 | Field | Value |
 |---|---|
 | **Type** | config |
-| **Target** | `pom.xml`, `web/pom.xml` |
+| **Target** | `pom.xml` |
 | **Intent** | Interfaces and DTOs are generated, never hand-written |
 | **Depends on** | B1 |
 
 **How**
 `openapi-generator-maven-plugin` bound to `generate-sources`. `generatorName=spring`,
-`interfaceOnly=true`, `useTags=false`, `modelNameSuffix=DTO`,
-`documentationProvider=springdoc`. Configure in the parent, execute in `web`.
+`interfaceOnly=true`, **`useTags=true`**, `modelNameSuffix=DTO`,
+`documentationProvider=springdoc`. One module, so it is configured and executed in the
+single `pom.xml`.
+
+> **`useTags=false` cannot satisfy this work unit's own exit criteria.** With it, the
+> generator groups by the **first path segment**, and every path in this service begins
+> `/v1` — the output is one `V1Api` carrying all 15 operations, not the `PokemonApi`,
+> `LocalPokemonApi`, `SyncApi` and `SecurityApi` the Phase 1 gate names. The trap the
+> original "Avoid" note described is real; the escape from it is `useTags=true` plus the
+> four tags in [WF-000 §3.2](../workflows/WF-000-foundation.md), not a different set of tags
+> under `useTags=false`.
 
 **Avoid**
-- Expecting `tags:` to control grouping — `useTags=false` groups by first path segment, and re-tagging does nothing → [openapi contract-first](../guides/openapi-contract-first.md)
+- Setting `useTags=false` and then re-tagging to fix the grouping — under that flag tags are ignored entirely and only the path shape matters → [openapi contract-first](../guides/openapi-contract-first.md)
 
 | Field | Value |
 |---|---|
 | **Produces** | `target/generated-sources/openapi/**` |
-| **Verify** | `mvn -B generate-sources && ls web/target/generated-sources/openapi/**/api/` |
+| **Verify** | `mvn -B generate-sources && ls target/generated-sources/openapi/**/api/` |
 | **Pass when** | `PokemonApi`, `LocalPokemonApi`, `SyncApi`, `SecurityApi` exist and compile |
 | **On fail / Rollback** | Read the generator output — a YAML error usually surfaces here, not in B1 |
 
@@ -136,7 +145,7 @@ Exclude `**/generated-sources/**` from JaCoCo, the copyright check, and any stat
 | Field | Value |
 |---|---|
 | **Type** | config |
-| **Target** | `web/…/config/OpenApiConfig.java`, `application.yaml` |
+| **Target** | `web/config/OpenApiConfig.java`, `application.yaml` |
 | **Intent** | A running instance must advertise exactly the contract we shipped |
 | **Depends on** | B3 |
 

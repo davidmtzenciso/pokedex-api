@@ -84,6 +84,79 @@ Recorded as ADRs rather than restated here:
 > either invented or null on each pass. The column is introduced with the JPA models in
 > [WU-US03-A](../work-units/WU-US03-A-persistence.md).
 
+### 3.2 API surface — the 15 operations
+
+> This section is the input to [WU-000-B](../work-units/WU-000-B-contract.md). It is the
+> **inventory**, not the schema detail; the authored `pokedex-api.yaml` is the source of
+> truth for shapes, and the story workflows own the behaviour behind each row.
+
+Paths below exclude the `/api` context path — `GET /v1/pokedex/pokemon` is served at
+`/api/v1/pokedex/pokemon`. 🔓 is reachable unauthenticated; 🔒 requires a bearer token.
+
+#### Catalogue — tag `Pokemon`, read-through to PokeAPI
+
+| # | Verb | Path | Auth | Success | Errors | Owner |
+|---|---|---|:---:|---|---|---|
+| 1 | GET | `/v1/pokedex/pokemon` | 🔓 | 200 `PokemonPageDTO` | 400, 502, 503, 504 | [WF-US01](WF-US01-pokemon-enumeration.md) |
+| 2 | GET | `/v1/pokedex/pokemon/{idOrName}` | 🔓 | 200 `PokemonDetailDTO` | 400, 404, 502, 504 | [WF-US02](WF-US02-detailed-view.md) |
+
+#### Local replica — tag `LocalPokemon`
+
+| # | Verb | Path | Auth | Success | Errors | Owner |
+|---|---|---|:---:|---|---|---|
+| 3 | GET | `/v1/pokedex/local` | 🔓 | 200 `LocalPokemonPageDTO` | 400 | [WF-US04](WF-US04-local-data-modification.md) |
+| 4 | GET | `/v1/pokedex/local/{id}` | 🔓 | 200 `LocalPokemonDTO` | 400, 404 | WF-US04 |
+| 5 | POST | `/v1/pokedex/local` | 🔒 | 201 + `Location` | 400, 401, 409 | WF-US04 |
+| 6 | PUT | `/v1/pokedex/local/{id}` | 🔒 | 200 `LocalPokemonDTO` | 400, 401, 404, 412 | WF-US04 |
+| 7 | PATCH | `/v1/pokedex/local/{id}` | 🔒 | 200 `LocalPokemonDTO` | 400, 401, 404, 412 | WF-US04 |
+| 8 | DELETE | `/v1/pokedex/local/{id}` | 🔒 | 204 | 400, 401, 404 | WF-US04 |
+
+#### Synchronisation — tag `Sync`
+
+| # | Verb | Path | Auth | Success | Errors | Owner |
+|---|---|---|:---:|---|---|---|
+| 9 | POST | `/v1/pokedex/sync/{idOrName}` | 🔒 | 201 new / 200 refreshed | 400, 401, 404, 409, 412, 502 | [WF-US03](WF-US03-data-synchronization.md) |
+| 10 | POST | `/v1/pokedex/sync/batch` | 🔒 | 202 `SyncBatchSummaryDTO` | 400, 401, 429 | WF-US03 |
+
+#### Security — tag `Security`
+
+| # | Verb | Path | Auth | Success | Errors | Owner |
+|---|---|---|:---:|---|---|---|
+| 11 | POST | `/v1/security/register` | 🔓 | 201 `CurrentUserDTO` | 400, 409 | [WF-AUTH](WF-AUTH-user-management.md) |
+| 12 | POST | `/v1/security/login` | 🔓 | 200 `TokenPairDTO` | 400, 401 | WF-AUTH |
+| 13 | POST | `/v1/security/token/refresh` | 🔓 | 200 `TokenPairDTO` | 400, 401, 409 | WF-AUTH |
+| 14 | POST | `/v1/security/logout` | 🔒 | 204 | 401 | WF-AUTH |
+| 15 | GET | `/v1/security/me` | 🔒 | 200 `CurrentUserDTO` | 401 | WF-AUTH |
+
+#### Pagination — every list operation
+
+| Parameter | Default | Constraint | Violation |
+|---|---|---|---|
+| `page` | `0` | `≥ 0` | 400 `INVALID_PAGINATION` |
+| `size` | **10** | `1..100` | 400 `INVALID_PAGINATION` naming the cap |
+
+`size` is **rejected, never clamped** — a silently clamped page is a client that believes it
+read 500 rows and read 100. The constraints are declared in the OpenAPI document so they
+become Bean Validation annotations on the generated parameters.
+
+Operation 3 additionally accepts the composable filters `region`, `tag` and `q`
+(name substring), all optional.
+
+#### Tag-to-interface mapping
+
+The four tags above are what produce the four generated interfaces the Phase 1 gate names:
+
+| Tag | Generated interface |
+|---|---|
+| `Pokemon` | `PokemonApi` |
+| `LocalPokemon` | `LocalPokemonApi` |
+| `Sync` | `SyncApi` |
+| `Security` | `SecurityApi` |
+
+> **This requires `useTags=true`.** Every path in this service begins `/v1`, so the
+> generator's default grouping — by first path segment — would emit a single `V1Api` holding
+> all 15 operations. See [WU-000-B](../work-units/WU-000-B-contract.md) B3.
+
 ### 3.3 Error envelope — RFC 9457
 
 ```json
