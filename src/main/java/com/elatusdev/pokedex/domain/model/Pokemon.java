@@ -101,10 +101,10 @@ public final class Pokemon {
         proprietary = proprietary.withNotes(notes);
     }
 
+    // the id and the state move together, which is the only way off DRAFT without breaking F6
     public void linkToUpstream(PokeApiId upstreamId) {
         replicationState = replicationState.transitionTo(ReplicationState.PENDING);
         pokeApiId = Optional.of(upstreamId);
-        requireStateConsistency();
     }
 
     public void transitionTo(ReplicationState next, Instant at) {

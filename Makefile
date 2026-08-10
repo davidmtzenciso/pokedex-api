@@ -24,8 +24,11 @@ arch: ## the structural suite alone
 	$(MVN) test -Dtest='*ArchitectureTest' -DfailIfNoSpecifiedTests=false
 
 mutation: ## PIT on domain + application. Slow; run deliberately, not in the commit loop
-	$(MVN) org.pitest:pitest-maven:mutationCoverage
-	@echo "report: target/pit-reports/index.html"
+	@# test-compile first: the goal mutates whatever is in target/classes, so invoking it
+	@# alone silently scores the PREVIOUS build and reports survivors you have already killed
+	$(MVN) test-compile
+	$(MVN) org.pitest:pitest-maven:mutationCoverage -DoutputFormats=XML,HTML
+	@echo "report: target/pit-reports/index.html (survivors: target/pit-reports/mutations.xml)"
 
 contract-check: ## the spec is valid, and no breaking change slipped into an existing operation
 	@if [ ! -f src/main/resources/openapi/pokedex-api.yaml ]; then \

@@ -167,6 +167,35 @@ class PokemonTest {
         }
 
         @Test
+        void should_carry_its_identity_and_version_when_rehydrated() {
+            Pokemon pokemon = Pokemon.rehydrate(
+                    PokemonId.of(42),
+                    Optional.of(PokeApiId.of(1)),
+                    bulbasaur(),
+                    ProprietaryFields.none(),
+                    ReplicationState.SYNCED,
+                    Optional.of(SYNCED_AT),
+                    3L);
+
+            assertThat(pokemon.id()).contains(PokemonId.of(42));
+            assertThat(pokemon.version()).isEqualTo(3L);
+        }
+
+        // the aggregate cannot walk off DRAFT on its own — F6 would break the moment the
+        // state changed, because the upstream id arrives in the same operation
+        @Test
+        void should_reject_leaving_draft_without_an_upstream_id_and_leave_the_state_untouched() {
+            Pokemon draft = Pokemon.draft(bulbasaur());
+
+            assertThatThrownBy(() -> draft.transitionTo(ReplicationState.PENDING, SYNCED_AT))
+                    .isInstanceOf(InvalidPokemonDataException.class)
+                    .hasMessageContaining("DRAFT");
+
+            assertThat(draft.replicationState()).isEqualTo(ReplicationState.DRAFT);
+            assertThat(draft.syncedAt()).isEmpty();
+        }
+
+        @Test
         void should_move_to_the_next_state_when_the_edge_is_on_the_diagram() {
             Pokemon pokemon = synced();
 
@@ -421,6 +450,25 @@ class PokemonTest {
                             List.of(new LocalizedName("es", "Bulbasaur", NameSource.CURATOR))))
                     .isInstanceOf(InvalidPokemonDataException.class)
                     .hasMessageContaining("UPSTREAM");
+        }
+
+        @Test
+        void should_accept_a_zero_base_experience() {
+            ReplicatedFields fields = new ReplicatedFields(
+                    new PokemonName("bulbasaur"),
+                    Optional.empty(),
+                    Mass.ofHectograms(69),
+                    Height.ofDecimetres(7),
+                    0,
+                    Sprite.NONE,
+                    Optional.empty(),
+                    List.of(),
+                    List.of(),
+                    List.of(),
+                    List.of(),
+                    List.of());
+
+            assertThat(fields.baseExperience()).isZero();
         }
 
         @Test

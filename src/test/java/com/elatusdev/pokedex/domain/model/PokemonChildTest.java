@@ -147,6 +147,12 @@ class PokemonChildTest {
         }
 
         @Test
+        void should_accept_a_value_of_exactly_one_hundred_and_twenty_characters() {
+            assertThat(new LocalizedName("es", "n".repeat(120), NameSource.UPSTREAM).value())
+                    .hasSize(120);
+        }
+
+        @Test
         void should_reject_a_value_over_one_hundred_and_twenty_characters() {
             assertThatThrownBy(() -> new LocalizedName("es", "n".repeat(121), NameSource.UPSTREAM))
                     .isInstanceOf(InvalidPokemonDataException.class)

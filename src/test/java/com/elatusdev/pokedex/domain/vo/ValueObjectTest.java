@@ -71,6 +71,13 @@ class ValueObjectTest {
         }
 
         @Test
+        void should_hash_case_insensitively() {
+            assertThat(new PokemonName("Bulbasaur").hashCode()).isEqualTo("bulbasaur".hashCode());
+            assertThat(new PokemonName("BULBASAUR").hashCode())
+                    .isEqualTo(new PokemonName("bulbasaur").hashCode());
+        }
+
+        @Test
         void should_not_equal_a_different_name() {
             assertThat(new PokemonName("bulbasaur")).isNotEqualTo(new PokemonName("ivysaur"));
         }
@@ -114,6 +121,11 @@ class ValueObjectTest {
         @Test
         void should_collapse_runs_of_whitespace() {
             assertThat(new Description("a\n\n\nb").value()).isEqualTo("a b");
+        }
+
+        @Test
+        void should_accept_a_description_of_exactly_two_thousand_characters() {
+            assertThat(new Description("d".repeat(2000)).value()).hasSize(2000);
         }
 
         @Test
@@ -175,6 +187,19 @@ class ValueObjectTest {
         @Test
         void should_not_equal_a_value_of_another_type() {
             assertThat(new Tag("starter")).isNotEqualTo("starter");
+        }
+
+        @Test
+        void should_accept_a_tag_of_exactly_thirty_characters() {
+            assertThat(new Tag("t".repeat(30)).label()).hasSize(30);
+        }
+
+        // pinned to the lower-cased value: case-insensitive equality demands a
+        // case-insensitive hash, and a constant hash would satisfy equals but not this
+        @Test
+        void should_hash_case_insensitively() {
+            assertThat(new Tag("Starter").hashCode()).isEqualTo("starter".hashCode());
+            assertThat(new Tag("STARTER").hashCode()).isEqualTo(new Tag("starter").hashCode());
         }
 
         @Test
@@ -247,13 +272,17 @@ class ValueObjectTest {
         @Test
         void should_reject_non_positive_identifiers() {
             assertThatThrownBy(() -> PokemonId.of(0)).isInstanceOf(InvalidPokemonDataException.class);
+            assertThatThrownBy(() -> PokemonId.of(-1)).isInstanceOf(InvalidPokemonDataException.class);
+            assertThatThrownBy(() -> UserId.of(0)).isInstanceOf(InvalidPokemonDataException.class);
             assertThatThrownBy(() -> UserId.of(-1)).isInstanceOf(InvalidPokemonDataException.class);
             assertThatThrownBy(() -> PokeApiId.of(0)).isInstanceOf(InvalidPokemonDataException.class);
+            assertThatThrownBy(() -> PokeApiId.of(-1)).isInstanceOf(InvalidPokemonDataException.class);
         }
 
         @Test
         void should_carry_the_value() {
             assertThat(PokemonId.of(7).value()).isEqualTo(7L);
+            assertThat(UserId.of(7).value()).isEqualTo(7L);
             assertThat(PokeApiId.of(25).value()).isEqualTo(25);
         }
     }
