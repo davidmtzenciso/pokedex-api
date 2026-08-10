@@ -74,7 +74,15 @@ Recorded as ADRs rather than restated here:
 | `Pokemon.notes` | Value object, **proprietary** | `notes` | Free text, ≤ 2000 chars |
 | `EvolutionLink` | Child entity | `id`, `fromPokeApiId`, `toPokeApiId`, `trigger`, `minLevel` | Flattened edge list of the upstream tree |
 | `User` | Aggregate root | `id`, `username`, `email`, `passwordHash`, `roles`, `createdAt` | The spec's "secondary collection for user management" |
-| `RefreshToken` | Child of `User` | `id`, `familyId`, `jti`, `expiresAt`, `revokedAt` | Rotation with family revocation |
+| `RefreshToken` | Child of `User` | `id`, `familyId`, `jti`, `expiresAt`, `revokedAt` | Rotation with family revocation. Built in [WU-AUTH-A](../work-units/WU-AUTH-A-user-domain.md), not WU-000-C |
+
+> **The `id` on a child entity is a persistence concern, and the domain records do not carry
+> one.** No invariant in §4.4 or §4.7 references a child's surrogate key — the containment
+> rule `∀c ∈ Children: ∃!p ∈ Pokemon: c.pokemonId = p.id` is a foreign key with cascade,
+> asserted by `PokemonCascadeDeleteComponentTest` (I9/F10), not by a field in `..domain..`.
+> Re-sync replaces every replicated child wholesale, so a domain-side key would have to be
+> either invented or null on each pass. The column is introduced with the JPA models in
+> [WU-US03-A](../work-units/WU-US03-A-persistence.md).
 
 ### 3.3 Error envelope — RFC 9457
 
