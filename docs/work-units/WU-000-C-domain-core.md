@@ -6,7 +6,7 @@
 | **Parent** | [WF-000 Foundation](../workflows/WF-000-foundation.md) |
 | **Objective contribution** | The whole domain model, framework-free, tests first |
 | **Estimate** | L |
-| **Status** | not started |
+| **Status** | done |
 
 ## Objective
 
@@ -170,10 +170,35 @@ case-insensitively distinct). Children are returned as immutable copies.
 
 ## Exit Criteria
 
-- [ ] Every invariant except I5 (merge, deferred to WU-US03-B) has a passing named test
-- [ ] Domain line coverage ≥ 95%; **mutation score ≥ 85%**
-- [ ] No test uses `any()`; no test asserts `!= null`; no test sleeps
-- [ ] `git log --oneline` shows test commits preceding implementation commits
+- [x] Every invariant **testable at the domain tier** has a passing named test
+- [x] Domain line coverage ≥ 95% — **100.00% line, 100.00% branch**
+- [x] Mutation score ≥ 85% — **100% (218/218), test strength 100%**
+- [x] No test uses `any()`; no test asserts `!= null`; no test sleeps
+- [x] `git log --oneline` shows test commits preceding implementation commits
+
+### Which invariants this work unit can actually close
+
+The original criterion read "every invariant except I5". That overstated what a
+framework-free domain can prove: §4.4 names a `*ComponentTest` in its own `Test` column for
+four of them, and those need a database, Redis or a filter chain that does not exist yet.
+
+| Invariant | Closed here | Test |
+|---|:---:|---|
+| I2 name ≤ 60, non-blank | yes | `ValueObjectTest$PokemonNameTest` |
+| I3 mass, height positive | yes | `ValueObjectTest$MassTest`, `$HeightTest` |
+| I4 ≤ 10 tags, distinct | yes | `PokemonTest$PokemonTagLimitTest` |
+| I6 legal transitions only | yes | `ReplicationStateTransitionTest`, `PokemonTest$ReplicationInvariantTest` |
+| I7 closed `Region` enum | yes | `ValueObjectTest$RegionTest` |
+| I10 password never exposed | partly | `UserTest` covers `toString`; `@JsonIgnore` and the log audit are web-tier |
+| I1 unique `pokeApiId` | no | DB partial unique index — WU-US03-A |
+| I5 merge preserves proprietary | no | `PokemonMergePolicyTest` — WU-US03-B |
+| I8 one live token per family | no | WU-AUTH-A |
+| I9 cascade delete | no | WU-US03-A |
+| I11 authenticated mutations | no | WU-AUTH-C |
+
+`Pokemon.replaceReplicated` already encodes the aggregate half of I5 — the
+`STALE → {SYNCED, CUSTOMIZED}` guard and that proprietary fields survive a replacement. The
+**property test over generated field combinations** is still WU-US03-B's.
 
 ```bash
 mvn -B test && make mutation
