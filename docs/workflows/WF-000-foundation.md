@@ -162,9 +162,12 @@ The state machine exists to make one rule unavoidable: the only edge that writes
 | `Sprite` | `frontDefault: URI, officialArtwork: URI` | Immutable | By both components |
 | `Region` | `value: RegionCode` (enum) | Immutable | By enum identity |
 | `Tag` | `label: String` | Immutable | Case-insensitive |
+| `Notes` | `value: String` | Immutable | By value; ≤ 2000 chars — the proprietary free-text field of §3.1 |
 | `Email` | `value: String` | Immutable | Case-insensitive, normalised |
+| `Username` | `value: String` | Immutable | Case-insensitive, normalised; 3..30 chars |
+| `UserId` | `value: Long` | Immutable | By value |
 | `PasswordHash` | `value: String` | Immutable | By value; `toString()` returns `"***"` |
-| `ReplicationState` | enum | Immutable | By enum identity |
+| `ReplicationState` | enum | Immutable | By enum identity — lives in `..domain.model..`, not `..domain.vo..`, because it carries the transition guard |
 
 ### 4.6 Domain Events
 
