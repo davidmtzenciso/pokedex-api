@@ -68,15 +68,23 @@ class BoundedContextArchitectureTest {
 
     // BC5 — the catalogue read path must not know the curated aggregate. It reads
     // replicated data, and Pokemon carries region, notes, tags, replication state and a
-    // local id that an anonymous read has no business seeing. Exactly one adapter is
-    // allowed to bridge the two contexts, and it maps rather than forwards.
+    // local id that an anonymous read has no business seeing. Only the named adapters may
+    // bridge the two contexts, and they map rather than forward.
+    //
+    // Two of them now, and both point the same way. catalog already depends on pokedex, so
+    // every crossing has to be catalog → pokedex or CY1 fails on the cycle:
+    //   PokedexLocalReplicaAdapter    catalog reads the local store   (LocalReplica)
+    //   PokedexUpstreamCatalogAdapter pokedex replicates from upstream (UpstreamCatalog)
+    // The second one inverts the usual placement deliberately — the port belongs to its
+    // consumer, pokedex, but the adapter cannot live there without turning the edge around.
     @Test
     void should_reach_pokedex_only_through_the_anti_corruption_adapter_when_the_class_is_in_catalog() {
         noClasses()
                 .that().resideInAPackage(CATALOG)
                 .and().haveSimpleNameNotEndingWith("PokedexLocalReplicaAdapter")
+                .and().haveSimpleNameNotEndingWith("PokedexUpstreamCatalogAdapter")
                 .should().dependOnClassesThat().resideInAPackage("..pokedex.pokedex..")
-                .because("BC5 — one adapter bridges catalog and pokedex; everything else goes through the catalogue's own model")
+                .because("BC5 — the named adapters bridge catalog and pokedex; everything else goes through the catalogue's own model")
                 .check(ProjectClasses.production());
     }
 }
