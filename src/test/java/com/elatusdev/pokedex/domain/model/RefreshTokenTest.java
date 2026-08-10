@@ -108,6 +108,22 @@ class RefreshTokenTest {
                 .hasMessageContaining("jti");
     }
 
+    // absent and blank are different inputs to the same guard, and only the blank half was
+    // covered — a mutant that dropped the null check survived because of it
+    @Test
+    void should_reject_an_absent_family_identifier() {
+        assertThatThrownBy(() -> RefreshToken.issue(OWNER, null, JTI, EXPIRES))
+                .isInstanceOf(InvalidPokemonDataException.class)
+                .hasMessageContaining("familyId");
+    }
+
+    @Test
+    void should_reject_an_absent_jti() {
+        assertThatThrownBy(() -> RefreshToken.issue(OWNER, FAMILY, null, EXPIRES))
+                .isInstanceOf(InvalidPokemonDataException.class)
+                .hasMessageContaining("jti");
+    }
+
     @Test
     void should_reject_a_missing_owner() {
         assertThatThrownBy(() -> RefreshToken.issue(null, FAMILY, JTI, EXPIRES))

@@ -6,7 +6,7 @@
 | **Parent** | [WF-AUTH User Management](../workflows/WF-AUTH-user-management.md) |
 | **Objective contribution** | ES256 tokens, BCrypt, and a session store that fails closed |
 | **Estimate** | M |
-| **Status** | not started |
+| **Status** | done |
 
 ## Objective
 

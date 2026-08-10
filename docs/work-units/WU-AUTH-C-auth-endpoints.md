@@ -6,7 +6,7 @@
 | **Parent** | [WF-AUTH User Management](../workflows/WF-AUTH-user-management.md) |
 | **Objective contribution** | `/v1/security/**` and the deny-by-default filter chain |
 | **Estimate** | M |
-| **Status** | not started |
+| **Status** | done |
 
 ## Objective
 
