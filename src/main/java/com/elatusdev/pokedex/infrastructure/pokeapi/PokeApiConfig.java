@@ -1,4 +1,3 @@
-// Copyright (c) 2026 ElatusDev
 package com.elatusdev.pokedex.infrastructure.pokeapi;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

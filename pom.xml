@@ -99,7 +99,7 @@
 
   <build>
     <plugins>
-      <!-- source hygiene: copyright header, no Javadoc, no NOSONAR -->
+      <!-- source hygiene: no file headers, no Javadoc, no NOSONAR -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>

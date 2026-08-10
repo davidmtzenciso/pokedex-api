@@ -1,4 +1,3 @@
-// Copyright (c) 2026 ElatusDev
 package com.elatusdev.pokedex.domain.vo;
 
 import com.elatusdev.pokedex.domain.exception.InvalidPokemonDataException;
