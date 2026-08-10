@@ -11,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.client.RestClient;
@@ -26,6 +27,10 @@ import tools.jackson.databind.json.JsonMapper;
 // and would take every other component test down with it.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
+// This test ends by destroying the container its context is wired to, so that context must
+// not be cached and handed to a later test — the connection pool would keep retrying a dead
+// port. Observed as a flaky 400 on an unrelated endpoint two runs out of three.
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class SessionStoreOutageComponentTest {
 
     @Container

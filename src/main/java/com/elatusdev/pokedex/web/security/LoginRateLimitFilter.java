@@ -79,6 +79,12 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
         }
     }
 
+    // package-private: eviction is only observable through the size of the tracked set, and
+    // a bound that is never asserted is a bound nobody notices breaking
+    int trackedCallers() {
+        return attempts.size();
+    }
+
     private void evictIdleCallers(Instant cutoff) {
         if (attempts.size() <= MAX_TRACKED_CALLERS) {
             return;
