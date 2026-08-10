@@ -12,17 +12,11 @@ if grep -rln --include='*.java' -i 'Copyright\|SPDX-License-Identifier' src 2>/d
 fi
 
 # 2. no Javadoc  (docs/handbook/java-patterns.md#no-javadoc)
-#    String literals are stripped first: an Ant-style path pattern such as "/v1/pokedex/**"
-#    or "/**" in a request matcher is not a comment, and a gate that cannot tell the
-#    difference gets switched off by the first person it blocks.
-while IFS= read -r f; do
-  if sed -e 's/"[^"]*"//g' -e 's://.*::' "$f" | grep -n '/\*\*' >/dev/null; then
-    echo "JAVADOC FORBIDDEN: $f"
-    sed -e 's/"[^"]*"//g' -e 's://.*::' "$f" | grep -n '/\*\*'
-    FAIL=1
-  fi
-done < <(find "$SRC" -name '*.java' 2>/dev/null)
-[ $FAIL -eq 1 ] && echo "names carry what, tests carry how, ADRs carry why."
+# anchored to the start of a line: a bare /** match also hits Ant path patterns like
+# "/v1/pokedex/**" in SecurityConfig, which are string literals, not comments
+if grep -rnE --include='*.java' '^[[:space:]]*/\*\*' "$SRC" 2>/dev/null; then
+  echo "JAVADOC FORBIDDEN: names carry what, tests carry how, ADRs carry why."; FAIL=1
+fi
 
 # 3. suppression ladder
 if grep -rn --include='*.java' 'NOSONAR' src 2>/dev/null; then

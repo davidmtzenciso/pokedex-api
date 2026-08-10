@@ -11,7 +11,7 @@ domain method → throws a typed domain exception
       ↓
 use case → does not catch it; lets it propagate
       ↓
-GlobalExceptionHandler (@RestControllerAdvice) → maps it to a ProblemDetail
+the context's @RestControllerAdvice → maps it to a ProblemDetail
       ↓
 client → application/problem+json with a stable `code`
 ```
@@ -45,7 +45,7 @@ public class PokemonNotFoundException extends RuntimeException {
 
 ```java
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class AuthExceptionHandler {
 
     @ExceptionHandler(PokemonNotFoundException.class)
     ProblemDetail handle(PokemonNotFoundException ex, HttpServletRequest request) {

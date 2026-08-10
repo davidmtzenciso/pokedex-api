@@ -31,33 +31,50 @@ implementation detail, and it is not trying to — that lives one altitude down.
 
 ## Current state — read this before Phase 1
 
-**[WU-000-A](../work-units/WU-000-A-project-setup.md) is already built.** Do not start from
-an empty directory.
+**Phase 1 is complete.** WU-000-A, B, C and D are all built. Do not start from an empty
+directory, and do not re-implement the domain.
 
 | Present | Detail |
 |---|---|
 | `pom.xml` | Single module, Spring Boot 4.1.0, `maven.compiler.release=24`, exact versions, no ranges |
-| Four layer packages | `domain` · `application` · `infrastructure` · `web` under `com.elatusdev.pokedex` |
-| `scripts/check-source-hygiene.sh` | No-file-header · no-Javadoc · no-NOSONAR, bound to `validate`. **Each proven to fail on a real violation** |
-| JaCoCo 90/90 | Merged across Surefire and Failsafe, bound to `verify`. Thresholds are overridable properties |
-| Maven enforcer, PIT, Failsafe | Wired |
+| **Bounded-context packages** | `catalog` · `pokedex` · `identity` · `shared`, each with the four layers — [ADR-0013](../adr/0013-bounded-context-packages.md) |
+| `scripts/check-source-hygiene.sh` | No-header · no-Javadoc · no-NOSONAR, bound to `validate`. **Each proven to fail on a real violation** |
+| JaCoCo 90/90, enforcer, PIT, Failsafe | Wired. PIT targets `com.elatusdev.pokedex.*.domain.*` and `*.application.*` |
 | `Makefile` | `verify`, `test`, `arch`, `mutation`, `contract-check`, `e2e`, `up`, `down`, `keys` |
-| `PokedexApplication` | Exists |
-| Domain: 13 value objects + `ReplicationState` + 9 exceptions | **84 tests green** |
+| **WU-000-C** | `Pokemon` + 7 child types, `ReplicatedFields`/`ProprietaryFields`, `ReplicationState`, `User`, `Role`, 15 VOs, 9 exceptions, 7 ports |
+| **WU-000-D** | 26 ArchUnit rules across 10 `*ArchitectureTest` classes, none frozen |
+| **WU-000-B** | `src/main/resources/openapi/pokedex-api.yaml`, generated `*Api` + `*DTO`, served verbatim |
 
-| Not yet present | Owning work unit |
+| Not yet present | Owning phase |
 |---|---|
-| ArchUnit suite | WU-000-D |
-| `Pokemon` / `User` aggregates, ports | WU-000-C |
-| `src/main/resources/openapi/pokedex-api.yaml` | WU-000-B |
-| `ApplicationContextLoadsComponentTest` | WU-000-A A6 — outstanding, needs Docker |
+| `PokemonMergePolicy` | Phase 5 · WU-US03-B |
 | Everything in WF-AUTH, WF-US01–04, WF-999 | Phases 2–7 |
 
-**Known-red, and expected:** coverage sits below the 90/90 gate until WU-000-C completes,
-and `make verify` fails immediately without a Docker daemon — that guard is deliberate
-(risk R8), not a bug.
+> **The packages moved after WU-000-C and D were written** — the tree is now context-first
+> ([ADR-0013](../adr/0013-bounded-context-packages.md)). If something does not compile, check
+> the import before assuming the class is missing. Nothing was deleted.
 
-**Start at Phase 1, WU-000-D.**
+### Outstanding cleanup — do this before Phase 2
+
+The contexts were scaffolded with every layer sub-package pre-created and held open by a
+`.gitkeep`. That is **not** the convention ([ADR-0013](../adr/0013-bounded-context-packages.md)):
+a package is created when a class needs one, and an empty directory documents a prediction
+rather than a design.
+
+```bash
+find src/main/java -type d -empty -delete          # after removing the .gitkeep files
+find src/main/java -name .gitkeep -delete
+```
+
+Around 21 directories are affected, nine of them under `catalog/`. Delete them, then create
+each package at the moment its first class lands — the work units already say where every
+class goes. This is a two-minute change and it removes the single most misleading thing about
+the current tree.
+
+**Known-red, and expected:** `make verify` fails immediately without a Docker daemon — that
+guard is deliberate (risk R8), not a bug.
+
+**Start at Phase 2, WU-AUTH-A.**
 
 ---
 
@@ -112,7 +129,7 @@ assumption.
 3. **`ClockPort`, never `Instant.now()`.** Every time-dependent rule must be testable without sleeping.
 4. **The merge policy is a property test**, not an example test. Generate field combinations.
 5. **Never `any()` matchers.** Exact values in stubs and verifications, or `argThat` with a real predicate.
-6. No file header on any new `.java` — the first line is the `package` declaration.
+6. **No file headers.** No copyright banner, licence block, or author tag. The first line of a `.java` file is `package`.
 7. No Javadoc. Names carry *what*, tests carry *how*, ADRs carry *why*.
 
 ---
@@ -157,7 +174,7 @@ without it.
 
 | Order | Work unit | Delivers | Entry |
 |---|---|---|---|
-| 1 | [WU-000-D](../work-units/WU-000-D-architecture-tests.md) | 16 ArchUnit rules, none frozen | WU-000-A |
+| 1 | [WU-000-D](../work-units/WU-000-D-architecture-tests.md) | 26 ArchUnit rules, none frozen | WU-000-A |
 | 2 | [WU-000-C](../work-units/WU-000-C-domain-core.md) | Aggregates, state machine, **ports** | WU-000-A, IAR re-confirmed |
 | 3 | [WU-000-B](../work-units/WU-000-B-contract.md) | `pokedex-api.yaml`, generated `*Api` + `*DTO` | WU-000-A |
 
@@ -185,7 +202,7 @@ make mutation
 mvn -B generate-sources && ls target/generated-sources/openapi/**/api/
 ```
 
-- [ ] All 16 ArchUnit rules pass. **Each was proven against a deliberate violation** before being trusted
+- [ ] All 26 ArchUnit rules pass. **Each was proven against a deliberate violation** before being trusted
 - [ ] `L2` turns red when a domain class imports Spring — demonstrated, then reverted
 - [ ] Every invariant **testable at the domain tier** has a passing named test — I1, I8, I9 and I11 name a `*ComponentTest` in [WF-000 §4.4](../workflows/WF-000-foundation.md) and need infrastructure later phases build
 - [ ] Domain line coverage ≥ 95%; **mutation score ≥ 85% on `domain`**, every survivor fixed or justified as equivalent
@@ -328,7 +345,7 @@ mvn -B verify
 | Order | Work unit | Delivers | Entry |
 |---|---|---|---|
 | 1 | [WU-US04-A](../work-units/WU-US04-A-crud-use-cases.md) | Five use cases, each with PRE-violation tests | US03-A |
-| 2 | [WU-US04-B](../work-units/WU-US04-B-crud-endpoints.md) | `LocalPokemonController`, full `GlobalExceptionHandler` | US04-A, AUTH-C |
+| 2 | [WU-US04-B](../work-units/WU-US04-B-crud-endpoints.md) | `LocalPokemonController`, `PokedexExceptionHandler` | US04-A, AUTH-C |
 
 > **"Further defensive logic" is the graded phrase in this story.** 404 and 400 are the
 > floor, not the answer. Optimistic locking via `@Version` on concurrent edits, the state
@@ -459,7 +476,7 @@ Append one row per work unit. This is the raw material for the retrospective.
 - [ ] Coverage 90/90; mutation ≥ 85% `domain`, ≥ 75% `application`
 - [ ] Zero ArchUnit violations; no frozen rules; no `// NOSONAR`
 - [ ] `gitleaks` clean
-- [ ] No file header on any source file; no Javadoc anywhere
+- [ ] No file headers anywhere; no Javadoc anywhere
 - [ ] Execution report written
 - [ ] Retrospective written
 - [ ] Branch pushed; PR opened

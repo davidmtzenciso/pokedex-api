@@ -19,7 +19,7 @@ implies.
 
 ## Outputs
 
-- `LocalPokemonController`, complete `GlobalExceptionHandler` coverage, component tests
+- `LocalPokemonController`, a `PokedexExceptionHandler` covering the local-CRUD rows, component tests
 
 ---
 
@@ -50,7 +50,7 @@ Reads are public; mutations are protected.
 | Field | Value |
 |---|---|
 | **Type** | edit |
-| **Target** | `web/…/error/GlobalExceptionHandler.java` + tests |
+| **Target** | `pokedex/web/error/PokedexExceptionHandler.java` + tests |
 | **Intent** | The story names 404 and 400 and then asks for "further defensive logic" |
 | **Depends on** | B1 |
 

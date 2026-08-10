@@ -10,7 +10,7 @@
 
 ## Objective
 
-Produce a single-module Maven project with the four layer packages in place and every
+Produce a single-module Maven project with the four bounded contexts and their layers in place, and every
 quality gate already enforced — before there is any code to enforce it against.
 
 ## Entry Criteria
@@ -64,31 +64,35 @@ dependency and plugin pins an exact version. No parent POM.
 | **Pass when** | Exit 0; `mvn help:evaluate -Dexpression=maven.compiler.release` prints `24` |
 | **On fail / Rollback** | `git checkout pom.xml` |
 
-### A2 — Create the four layer packages
+### A2 — Create the context and layer packages
 
 | Field | Value |
 |---|---|
 | **Type** | create |
-| **Target** | `src/main/java/com/elatusdev/pokedex/{domain,application,infrastructure,web}` |
-| **Intent** | The layers exist before anything is put in them |
+| **Target** | `src/main/java/com/elatusdev/pokedex/{catalog,pokedex,identity,shared}/…` |
+| **Intent** | The contexts and their layers exist before anything is put in them |
 | **Depends on** | A1 |
 | **Status** | done |
 
 **How**
+Four top-level **bounded contexts** — `catalog`, `pokedex`, `identity`, `shared`
+([ADR-0013](../adr/0013-bounded-context-packages.md)) — each carrying the four layers:
 `domain/{model,vo,policy,exception,port}` · `application/{usecase,command,result}` ·
 `infrastructure/{persistence,pokeapi,cache,security}` · `web/{controller,error,config}`.
 
-> One module means the compiler will **not** stop a domain class importing Spring.
-> `DomainPurityArchitectureTest` (WU-000-D) is the only thing that will — see
+> One module means the compiler will **not** stop a domain class importing Spring, nor one
+> context reaching into another. `DomainPurityArchitectureTest` and
+> `BoundedContextArchitectureTest` (WU-000-D) are the only things that will — see
 > [ADR-0001](../adr/0001-clean-architecture-layered-packages.md).
 
 **Avoid**
 - Putting a framework annotation in `..domain..` "just for DI". Define a port instead → [design patterns](../handbook/design-patterns.md)
+- Putting anything context-specific in `shared`. The kernel depends on nothing (`BC3`)
 
 | Field | Value |
 |---|---|
 | **Produces** | The package tree |
-| **Verify** | `mvn -B test -Dtest=DomainPurityArchitectureTest` (once WU-000-D lands) |
+| **Verify** | `mvn -B test -Dtest='DomainPurityArchitectureTest,BoundedContextArchitectureTest'` (once WU-000-D lands) |
 | **Pass when** | Green; a deliberate `import org.springframework...` in `..domain..` turns it red |
 | **On fail / Rollback** | Move the offending class out of `..domain..` |
 
@@ -131,7 +135,7 @@ deliberate probe can lower them without editing the POM.
 **How**
 One bash script run by `exec-maven-plugin` at the `validate` phase, checking:
 
-1. No file header on any `.java` — the first line is the `package` declaration
+1. **No file header** — no copyright or licence banner in any `.java`
 2. **No `/**` anywhere in `src/main/java`** — Javadoc is forbidden ([java patterns](../handbook/java-patterns.md#no-javadoc))
 3. No `// NOSONAR` — the suppression ladder
 
@@ -226,9 +230,9 @@ Built and verified in this repository:
 
 | Item | State |
 |---|---|
-| `pom.xml`, four layer packages | done — compiles on Spring Boot 4.1.0, JDK 25, release 24 |
+| `pom.xml`, context + layer packages | done — compiles on Spring Boot 4.1.0, JDK 25, release 24 |
 | JaCoCo 90/90 merged gate | wired; thresholds are overridable properties |
-| Source hygiene (copyright · no-Javadoc · no-NOSONAR) | **proven** — each violation was introduced, seen to fail the build, then reverted |
+| Source hygiene (no-header · no-Javadoc · no-NOSONAR) | **proven** — each violation was introduced, seen to fail the build, then reverted |
 | Maven enforcer | wired |
 | `PokedexApplication` | exists |
 | `ApplicationContextLoadsComponentTest` | **not yet written** (A6) |

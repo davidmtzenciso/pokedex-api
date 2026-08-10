@@ -11,7 +11,7 @@ graph TD
         LocalPokemonController
         SyncController
         SecurityController
-        GlobalExceptionHandler
+        AuthExceptionHandler
         SecurityConfig
         GEN["*Api + *DTO<br/>(generated from OpenAPI)"]
     end
@@ -59,7 +59,7 @@ graph TD
     SecurityController --> RegisterUserUseCase
     SecurityController --> AuthenticateUserUseCase
     SecurityController --> RefreshTokenRotationUseCase
-    GlobalExceptionHandler -.->|maps exceptions| domain
+    AuthExceptionHandler -.->|maps exceptions| domain
 
     ListPokemonUseCase --> PORTS
     GetPokemonDetailUseCase --> PORTS
@@ -84,7 +84,7 @@ graph TD
 - **Every arrow from `infrastructure` into `domain` is `-.->|implements|`.** That is dependency inversion. No solid arrow ever leaves `domain`.
 - **Controllers implement generated interfaces.** ArchUnit `OA1` fails the build on a hand-written endpoint.
 - **One use case class per operation.** Command/query separation at the class level, which keeps each class small enough to test exhaustively.
-- **`GlobalExceptionHandler` is the only element that touches domain exceptions from the web layer.** Exception-to-status mapping exists in exactly one place.
+- **Exception-to-status mapping lives in a `@RestControllerAdvice` per context**, and nowhere else. One advice per context rather than one globally, because a single advice importing every context's exceptions would make `shared` depend on all of them (`BC3`).
 
 ## Related
 

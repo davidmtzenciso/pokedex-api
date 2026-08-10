@@ -25,6 +25,11 @@ com.elatusdev.pokedex
 ├── application/     usecase · command · result                ← depends on: domain
 ├── infrastructure/  persistence · pokeapi · cache · security   ← depends on: application, domain
 └── web/             controller · error · config                ← depends on: application, infrastructure
+
+The top of that tree is the **bounded context**, not the layer — each of `catalog`,
+`pokedex`, `identity` and `shared` carries these four packages
+([ADR-0013](0013-bounded-context-packages.md)). The dependency rule below is unchanged by
+that: ArchUnit's `..domain..` matches every context's domain equally.
 ```
 
 Ports (`PokemonRepository`, `PokemonCatalog`, `CachePort`, `TokenIssuer`, `PasswordHasher`, `ClockPort`) are interfaces owned by `domain`. Adapters in `infrastructure` implement them. The dependency arrow points inward at every boundary — that part is unchanged by the packaging choice.

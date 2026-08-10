@@ -47,7 +47,7 @@ mvn -B generate-sources                    # after any spec edit
 | Unit | `*Test.java` | Surefire | no | Value objects, policies, use cases against mocked ports |
 | Upstream contract | WireMock-backed | Surefire | no | The PokeAPI adapter against recorded shapes, including 500s and timeouts |
 | Component | `*ComponentTest.java` | Failsafe + Testcontainers | **yes** | Full Spring context against a real Postgres and Redis |
-| Architecture | `*ArchitectureTest.java` | Surefire | no | The 16 structural rules |
+| Architecture | `*ArchitectureTest.java` | Surefire | no | The 26 structural rules |
 | Published contract | `make contract-check` | `openapi-spec-validator` + `oasdiff` | no | The spec is valid, and no breaking change slipped into an existing operation |
 | API E2E | Newman collection | `make e2e` | yes | Every endpoint against the running stack with seeded data |
 | Mutation | PIT | `make mutation` | no | That the tests would **notice** if the code were wrong |
@@ -110,7 +110,7 @@ last git tag. A breaking change to an existing operation fails it — see
 
 | Gate | Failure looks like |
 |---|---|
-| File header | Any `.java` outside generated sources whose first line is not its `package` declaration. Bound to the `validate` phase |
+| File header | Any `.java` containing a copyright or licence banner. Headers are **forbidden**, not required. Bound to the `validate` phase |
 | Dependency convergence | Maven enforcer blocks conflicting transitive versions |
 | Suppression ladder | A grep target fails on `// NOSONAR` or `sonar.exclusions` |
 | Javadoc | A grep target fails on `/**` in `src/main/java` outside generated sources — see [java patterns](../handbook/java-patterns.md#no-javadoc) |

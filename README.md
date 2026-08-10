@@ -65,15 +65,23 @@ have, which is the trade [ADR-0001](docs/adr/0001-clean-architecture-layered-pac
 
 ```
 com.elatusdev.pokedex
-├── domain/          model · vo · policy · exception · port    ← depends on nothing
-├── application/     usecase · command · result                ← depends on: domain
-├── infrastructure/  persistence · pokeapi · cache · security   ← depends on: application, domain
-└── web/             controller · error · config                ← depends on: application, infrastructure
+├── catalog/       upstream read-through — US01, US02
+├── pokedex/       curated local collection — US03, US04
+├── identity/      users, tokens, sessions — WF-AUTH
+└── shared/        the shared kernel — depends on nothing
+
+each context carrying the four layers:
+    domain/          model · vo · policy · exception · port   ← depends on nothing
+    application/     usecase · command · result
+    infrastructure/  persistence · pokeapi · cache · security
+    web/             controller · error · config
 ```
 
-**One Maven module.** The layers are packages; the dependency rule is enforced by ArchUnit
-rather than by the compiler — see [ADR-0001](docs/adr/0001-clean-architecture-layered-packages.md), which
-records what that costs.
+**One Maven module.** The top of the tree is the bounded context
+([ADR-0013](docs/adr/0013-bounded-context-packages.md)); the layers are packages inside each
+one. Both the dependency rule and the context boundaries are enforced by ArchUnit rather
+than by the compiler — see [ADR-0001](docs/adr/0001-clean-architecture-layered-packages.md),
+which records what that costs.
 
 Java 24 language level on a Temurin 25 (LTS) runtime · Spring Boot 4 · PostgreSQL 17 +
 Flyway · Redis 7 · contract-first OpenAPI with generated interfaces and DTOs · RFC 9457
@@ -163,10 +171,10 @@ patterns, and anti-patterns, each ending in a verification. Order:
 
 | WU | Delivers | Workflow |
 |---|---|---|
-| [WU-000-A](docs/work-units/WU-000-A-project-setup.md) | One module, four layer packages, every gate wired | WF-000 |
+| [WU-000-A](docs/work-units/WU-000-A-project-setup.md) | One module, four contexts, every gate wired | WF-000 |
 | [WU-000-B](docs/work-units/WU-000-B-contract.md) | OpenAPI document, generated interfaces | WF-000 |
 | [WU-000-C](docs/work-units/WU-000-C-domain-core.md) | Value objects, aggregates, state machine, ports | WF-000 |
-| [WU-000-D](docs/work-units/WU-000-D-architecture-tests.md) | 16 ArchUnit rules | WF-000 |
+| [WU-000-D](docs/work-units/WU-000-D-architecture-tests.md) | 26 ArchUnit rules | WF-000 |
 | [WU-AUTH-A](docs/work-units/WU-AUTH-A-user-domain.md) | `User` aggregate, refresh-token families | WF-AUTH |
 | [WU-AUTH-B](docs/work-units/WU-AUTH-B-security-adapters.md) | ES256, BCrypt, `jti` sessions | WF-AUTH |
 | [WU-AUTH-C](docs/work-units/WU-AUTH-C-auth-endpoints.md) | Endpoints and deny-by-default routing | WF-AUTH |
@@ -225,6 +233,8 @@ it — never edit or delete the original.
 | [0009](docs/adr/0009-no-bundled-client.md) | The service ships no client | Accepted |
 | [0010](docs/adr/0010-hard-deletes.md) | Deletes are hard | Accepted |
 | [0011](docs/adr/0011-container-image-strategy.md) | A hand-written layered Dockerfile, not buildpacks | Accepted |
+| [0012](docs/adr/0012-flyway-versioned-migrations.md) | Flyway versioned migrations, not `ddl-auto` | Accepted |
+| [0013](docs/adr/0013-bounded-context-packages.md) | Packages by bounded context, layers inside them | Accepted |
 
 **The three worth reading first.** [0007](docs/adr/0007-proprietary-field-merge-policy.md)
 answers a conflict the requirements never state but every correct implementation must

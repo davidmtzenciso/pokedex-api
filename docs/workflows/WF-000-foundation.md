@@ -2,7 +2,7 @@
 
 > **Scope**: The project setup, the contract, the domain core, and the governance every later workflow depends on. Not a user story — the substrate the stories are built on.
 > **Project**: `pokedex-api`
-> **Delivers**: Five-module build with every gate active · the OpenAPI contract · the domain model, state machine, and merge policy · the ArchUnit suite
+> **Delivers**: Single-module build with every gate active · the OpenAPI contract · the domain model, state machine, and merge policy · the ArchUnit suite
 > **Estimate**: L
 > **Work units**: [WU-000-A](../work-units/WU-000-A-project-setup.md) · [WU-000-B](../work-units/WU-000-B-contract.md) · [WU-000-C](../work-units/WU-000-C-domain-core.md) · [WU-000-D](../work-units/WU-000-D-architecture-tests.md)
 >
@@ -14,10 +14,11 @@
 
 ## 1. Summary
 
-Produce a build in which the Clean Architecture dependency rule is a compile error, the API
-contract exists before any controller, and the domain model — including the replication
-state machine and the merge policy that protects curator data — is complete and
-property-tested.
+Produce a build in which the Clean Architecture dependency rule is a **build failure** —
+asserted by ArchUnit, since one module means the compiler will not assert it
+([ADR-0001](../adr/0001-clean-architecture-layered-packages.md)) — the API contract exists
+before any controller, and the domain model, including the replication state machine and the
+merge policy that protects curator data, is complete and property-tested.
 
 Nothing in this workflow is visible to a user. Everything in the story workflows depends on it.
 
@@ -37,6 +38,8 @@ Recorded as ADRs rather than restated here:
 | The contract is a versioned, published artifact | [ADR-0008](../adr/0008-openapi-contract-distribution.md) |
 | The service ships no client | [ADR-0009](../adr/0009-no-bundled-client.md) |
 | Deletes are hard | [ADR-0010](../adr/0010-hard-deletes.md) |
+| Flyway owns the schema; `ddl-auto` is `validate` | [ADR-0012](../adr/0012-flyway-versioned-migrations.md) |
+| Packages by bounded context, layers inside them | [ADR-0013](../adr/0013-bounded-context-packages.md) |
 
 ---
 
@@ -383,10 +386,10 @@ pokedex-api/
 ├── pom.xml                                   ← one module, no parent
 └── src/
     ├── main/java/com/elatusdev/pokedex/
-    │   ├── domain/          model · vo · policy · exception · port   ← depends on nothing
-    │   ├── application/     usecase · command · result
-    │   ├── infrastructure/  persistence · pokeapi · cache · security
-    │   ├── web/             controller · error · config
+    │   ├── catalog/         ┐
+    │   ├── pokedex/          ├ bounded contexts, each carrying the four layers:
+    │   ├── identity/         ┘ domain · application · infrastructure · web
+    │   ├── shared/           ← the kernel: replicated VOs, CachePort, ClockPort
     │   └── PokedexApplication.java
     ├── main/resources/
     │   ├── openapi/pokedex-api.yaml          ← the contract, authored by hand
@@ -488,7 +491,7 @@ Secrets never live in `*.properties` (`java:S6437`, `docker:S6472`). The dev key
 | H8 | Records for immutable data; `Stream.toList()`; text blocks for multi-line SQL/JSON | `java:S6206`, `java:S6204`, `java:S6126` |
 | H9 | Method body ≤ 20 lines; class ≤ 300 lines (500 for entities/config/controllers); cyclomatic ≤ 10; nesting ≤ 3 | `B-01`–`B-04` |
 | H10 | IDs are always `Long`, never `Integer` (`pokeApiId` is the documented exception — it is an upstream identifier, not ours) | `B-14` |
-| H11 | No file header on any `.java` — the first line is the `package` declaration | `U-01` |
+| H11 | **No file headers.** No copyright banner, licence block, or `SPDX-License-Identifier` on any source file — the first line is `package` | source hygiene gate |
 | H12 | Date literals use `java.time.Month`; `.now()` always takes a `Clock` or `ZoneId` | `java:S8694`, `java:S8688` |
 | H13 | JWT is **ES256**; reject `alg:none`; validate `iss`/`aud`/`exp`; key by `kid` | `jwt-jose.md`, `java:S5659` |
 | H14 | Passwords hashed with BCrypt; `HashingService`-style SHA-256 is **not** for passwords | `java:S5344` |
@@ -524,13 +527,26 @@ Secrets never live in `*.properties` (`java:S6437`, `docker:S6472`). The dev key
 | **N3** — Repository naming | `*Repository` port in `..domain.port..`; adapter in `..infrastructure.persistence..` | Yes | `NamingConventionArchitectureTest` |
 | **N4** — DataModel naming | `*DataModel` resides in `..infrastructure.persistence.model..` | Yes | `NamingConventionArchitectureTest` |
 | **N5** — Exception placement | Domain exceptions are `RuntimeException` subclasses in `..domain.exception..`; no `*Service` inside `usecase` | Yes | `NamingConventionArchitectureTest` |
+| **N6** — DTO naming | Every class in `..web.dto..` ends `DTO`, **and** no `*DTO` exists outside it | Yes | `NamingConventionArchitectureTest` |
+| **N7** — Domain names are unqualified | No class in `..domain..` ends `DTO`, `Dto`, `DataModel`, `Entity`, `Request`, or `Response` | Yes | `NamingConventionArchitectureTest` |
+| **N9** — Port and adapter naming | `..port..` holds only interfaces and carrier records; `*Adapter` lives in `..infrastructure..` and implements a port | Yes | `NamingConventionArchitectureTest` |
 | **IO1** — DB containment | `EntityManager`, `JdbcTemplate`, and `JpaRepository` appear only under `..infrastructure..` | Yes | `IoConfinementArchitectureTest` |
 | **IO2** — HTTP containment | `RestClient` appears only under `..infrastructure.pokeapi..` | Yes | `IoConfinementArchitectureTest` |
 | **IMF1** — Immutability | Every class in `..domain.vo..` is a `record` or has only final fields | Yes | `ImmutabilityArchitectureTest` |
 | **CI1** — Constructor injection | No field `@Autowired`, no field `@Value`, no setter injection | Yes | `ConstructionArchitectureTest` |
 | **SB-PA4** — Filter-chain fallthrough | Every `@Bean SecurityFilterChain` terminates with `.anyRequest()` | Yes | `SecurityConfigArchitectureTest` |
 | **OA1** — Contract confinement | Every `@RestController` implements a generated `*Api` interface | Yes | `OpenApiContractConfinementArchitectureTest` |
-| **CY1** — No cycles | No package cycles anywhere in `com.elatusdev.pokedex` | Yes | `CycleArchitectureTest` |
+| **L5** — Technical port purity | A port in `shared/port` names no framework type | Yes | `DomainPurityArchitectureTest` |
+| **BC1** — Identity isolation | `identity` depends on neither `catalog` nor `pokedex` | Yes | `BoundedContextArchitectureTest` |
+| **BC2** — Catalogue isolation | `catalog` does not depend on `identity` | Yes | `BoundedContextArchitectureTest` |
+| **BC3** — Kernel purity | `shared` depends on **no** context at all | Yes | `BoundedContextArchitectureTest` |
+| **BC4** — Context coupling | A context reaches another only through its `domain`, never its `application`, `infrastructure`, or `web` | Yes | `BoundedContextArchitectureTest` |
+| **CY1** — No context cycles | No cycles between `catalog`, `pokedex`, `identity`, `shared` | Yes | `CycleArchitectureTest` |
+| **CY2** — No layer cycles | No cycles between layers within a context | Yes | `CycleArchitectureTest` |
+
+`L1`–`L4`, `N1`–`N5`, `IO1`–`IO2` are written against **relative** package patterns
+(`..domain..`, `..application..`), so each matches inside every context without change —
+[ADR-0013](../adr/0013-bounded-context-packages.md).
 
 `FreezingArchRule` is forbidden — rules ship enforced or not at all.
 
@@ -565,7 +581,7 @@ Full matrix: [error handling](../handbook/error-handling.md).
 
 ## 10. Acceptance Criteria
 
-**AC1**: Given a clean checkout, when `make verify` runs, then all four layer packages compile at
+**AC1**: Given a clean checkout, when `make verify` runs, then all four context packages compile at
 language level 24, every test tier passes, and JaCoCo reports ≥ 90% line and ≥ 90% branch.
 
 **AC1c**: Given a running API, when `GET /api/v3/api-docs.yaml` is called, then the document
@@ -578,9 +594,9 @@ proprietary field is byte-identical to its prior value** (F7).
 **AC6 — Coverage**: JaCoCo on merged Surefire and Failsafe data reports ≥ 90% line and
 ≥ 90% branch; the build **fails** below either.
 
-**AC9 — Architecture**: All 16 ArchUnit rules pass, none frozen, none allowlisted.
+**AC9 — Architecture**: All 26 ArchUnit rules pass, none frozen, none allowlisted.
 
-**AC9b — No file header**: Every `.java` outside generated sources begins with its `package` declaration; no copyright, licence, SPDX, author or date banner appears anywhere.
+**AC9b — No file headers**: No `.java` outside generated sources contains a copyright or licence banner.
 
 **AC9c — No Javadoc**: `grep -rn --include=*.java '/\*\*' src/main/java` returns nothing outside generated sources.
 
@@ -606,8 +622,8 @@ last tag.
 |---|:---:|---|
 | §4.4 | 0 | Every invariant carries a named test |
 | §4.7 | 0 | Every formula maps to a test or AC; every `PRE` violation has an error row |
-| §5 | 3 | Layer, naming, and contract rules promoted to ArchUnit L1–L4, N1–N5, OA1 |
-| §9 | 2 | The file-header rule promoted to a `validate`-phase check; suppression ladder to a grep target in `make verify` |
+| §5 | 3 | Layer, naming, and contract rules promoted to ArchUnit L1–L5, N1–N9, OA1 |
+| §9 | 2 | File headers **forbidden** rather than mandated, and checked at `validate`; suppression ladder to a grep target in `make verify` |
 | §10 | 4 | Hosted-analyser gates (duplication, smells, hotspots) **deleted rather than restated** — nothing local enforces them |
 | §10 AC10 | 1 | "Verifies interactions" was unfalsifiable while `any()` was permitted — promoted to H25 and AC10b |
 | §9 H26 | 1 | "No Javadoc" was a preference until it had a grep gate — promoted to AC9c |
