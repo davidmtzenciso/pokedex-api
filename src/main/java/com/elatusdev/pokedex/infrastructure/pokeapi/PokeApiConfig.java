@@ -15,4 +15,23 @@ public class PokeApiConfig {
     public PokeApiClient pokeApiClient(PokeApiProperties properties) {
         return new PokeApiClient(properties);
     }
+
+    @Bean
+    public PokeApiMapper pokeApiMapper() {
+        return new PokeApiMapper();
+    }
+
+    @Bean
+    public EvolutionChainMapper evolutionChainMapper() {
+        return new EvolutionChainMapper();
+    }
+
+    @Bean
+    public PokeApiCatalogAdapter pokeApiCatalogAdapter(
+            PokeApiClient client,
+            PokeApiMapper mapper,
+            EvolutionChainMapper evolutionMapper,
+            PokeApiProperties properties) {
+        return new PokeApiCatalogAdapter(client, mapper, evolutionMapper, properties);
+    }
 }
