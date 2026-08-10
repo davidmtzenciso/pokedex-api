@@ -1,0 +1,26 @@
+server:
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: pokedex-api
+
+springdoc:
+  # The contract is authored, not derived. Annotation scanning would build a second
+  # document that drifts from the file we publish, and AC1c would fail the moment it did.
+  api-docs:
+    enabled: false
+  swagger-ui:
+    path: /swagger-ui.html
+    url: /api/v3/api-docs.yaml
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true

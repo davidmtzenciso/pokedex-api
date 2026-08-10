@@ -107,6 +107,40 @@
         </executions>
       </plugin>
 
+      <!-- the contract is authored by hand; these interfaces and DTOs are derived from it -->
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <version>${openapi-generator.version}</version>
+        <executions>
+          <execution>
+            <id>generate-api</id>
+            <phase>generate-sources</phase>
+            <goals><goal>generate</goal></goals>
+            <configuration>
+              <inputSpec>${project.basedir}/src/main/resources/openapi/pokedex-api.yaml</inputSpec>
+              <generatorName>spring</generatorName>
+              <apiPackage>com.elatusdev.pokedex.web.api</apiPackage>
+              <modelPackage>com.elatusdev.pokedex.web.dto</modelPackage>
+              <modelNameSuffix>DTO</modelNameSuffix>
+              <generateSupportingFiles>false</generateSupportingFiles>
+              <generateApiTests>false</generateApiTests>
+              <generateModelTests>false</generateModelTests>
+              <configOptions>
+                <interfaceOnly>true</interfaceOnly>
+                <!-- every path starts /v1, so the default grouping would emit one V1Api -->
+                <useTags>true</useTags>
+                <documentationProvider>springdoc</documentationProvider>
+                <useSpringBoot3>true</useSpringBoot3>
+                <openApiNullable>false</openApiNullable>
+                <useOptional>false</useOptional>
+                <skipDefaultInterface>true</skipDefaultInterface>
+              </configOptions>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -142,6 +176,10 @@
         <version>${surefire.version}</version>
         <configuration>
           <includes><include>**/*ComponentTest.java</include></includes>
+          <!-- spring-boot:repackage replaces the main artifact with a fat jar whose classes
+               sit under BOOT-INF/classes. Failsafe defaults to that artifact, and the
+               @SpringBootConfiguration package search then finds nothing. -->
+          <classesDirectory>${project.build.outputDirectory}</classesDirectory>
         </configuration>
         <executions>
           <execution>
@@ -154,6 +192,13 @@
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${jacoco.version}</version>
+        <configuration>
+          <!-- generated code is not our code; gating it produces noise, not signal -->
+          <excludes>
+            <exclude>com/elatusdev/pokedex/web/api/**</exclude>
+            <exclude>com/elatusdev/pokedex/web/dto/**</exclude>
+          </excludes>
+        </configuration>
         <executions>
           <execution><id>prepare-unit</id><goals><goal>prepare-agent</goal></goals></execution>
           <execution>

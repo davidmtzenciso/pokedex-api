@@ -1,0 +1,1131 @@
+openapi: 3.1.0
+info:
+  title: Pokedex API
+  description: |
+    A curated Pokedex over PokeAPI. The catalogue is read through upstream; the local
+    replica is owned by curators and its proprietary fields are never overwritten by a
+    re-synchronisation.
+
+    Errors use RFC 9457 `application/problem+json` with a stable machine-readable `code`.
+  version: 0.1.0
+  license:
+    name: Proprietary
+    url: https://elatus-dev.com/license
+servers:
+  - url: /api
+    description: The service, behind its context path
+
+tags:
+  - name: Pokemon
+    description: The upstream catalogue, read through PokeAPI
+  - name: LocalPokemon
+    description: The local replica, owned by curators
+  - name: Sync
+    description: Replication from PokeAPI into the local store
+  - name: Security
+    description: Registration, login, token rotation
+
+security:
+  - bearerAuth: []
+
+paths:
+  /v1/pokedex/pokemon:
+    get:
+      tags: [Pokemon]
+      operationId: listPokemon
+      summary: List the catalogue, one page at a time
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+      responses:
+        '200':
+          description: A page of catalogue rows
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PokemonPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+
+  /v1/pokedex/pokemon/{idOrName}:
+    get:
+      tags: [Pokemon]
+      operationId: getPokemon
+      summary: Read one catalogue entry by upstream id or by name
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/IdOrNameParam'
+      responses:
+        '200':
+          description: The full record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PokemonDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '504':
+          $ref: '#/components/responses/GatewayTimeout'
+
+  /v1/pokedex/local:
+    get:
+      tags: [LocalPokemon]
+      operationId: listLocalPokemon
+      summary: List the local replica, with composable filters
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+        - name: region
+          in: query
+          required: false
+          description: Restrict to one region
+          schema:
+            $ref: '#/components/schemas/Region'
+        - name: tag
+          in: query
+          required: false
+          description: Restrict to records carrying this tag, compared case-insensitively
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 30
+        - name: q
+          in: query
+          required: false
+          description: Restrict to records whose name contains this substring
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 60
+      responses:
+        '200':
+          description: A page of local records
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocalPokemonPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    post:
+      tags: [LocalPokemon]
+      operationId: createLocalPokemon
+      summary: Create a local record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLocalPokemonRequest'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: The URI of the created record
+              required: true
+              schema:
+                type: string
+                format: uri-reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocalPokemon'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /v1/pokedex/local/{id}:
+    get:
+      tags: [LocalPokemon]
+      operationId: getLocalPokemon
+      summary: Read one local record
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: The local record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocalPokemon'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [LocalPokemon]
+      operationId: replaceLocalPokemon
+      summary: Replace the proprietary fields of a local record
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplaceLocalPokemonRequest'
+      responses:
+        '200':
+          description: The updated record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocalPokemon'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+    patch:
+      tags: [LocalPokemon]
+      operationId: patchLocalPokemon
+      summary: Amend individual proprietary fields of a local record
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchLocalPokemonRequest'
+      responses:
+        '200':
+          description: The updated record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocalPokemon'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+    delete:
+      tags: [LocalPokemon]
+      operationId: deleteLocalPokemon
+      summary: Delete a local record and every child row it owns
+      description: |
+        The delete is hard. There is no recoverable state: re-importing produces a new
+        record, and any proprietary field that was on this one is gone.
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '204':
+          description: Deleted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/pokedex/sync/{idOrName}:
+    post:
+      tags: [Sync]
+      operationId: syncPokemon
+      summary: Replicate one Pokemon from PokeAPI, preserving proprietary fields
+      parameters:
+        - $ref: '#/components/parameters/IdOrNameParam'
+      responses:
+        '200':
+          description: An existing record was refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocalPokemon'
+        '201':
+          description: A new record was replicated
+          headers:
+            Location:
+              description: The URI of the created record
+              required: true
+              schema:
+                type: string
+                format: uri-reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocalPokemon'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+
+  /v1/pokedex/sync/batch:
+    post:
+      tags: [Sync]
+      operationId: syncPokemonBatch
+      summary: Replicate a bounded range of Pokemon
+      description: |
+        Accepted for processing. The three counts in the summary partition the requested
+        range, so `succeeded + failed + skipped` always equals `to - from + 1`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncBatchRequest'
+      responses:
+        '202':
+          description: Accepted, with the outcome summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncBatchSummary'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /v1/security/register:
+    post:
+      tags: [Security]
+      operationId: register
+      summary: Register a curator
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUser'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /v1/security/login:
+    post:
+      tags: [Security]
+      operationId: login
+      summary: Exchange credentials for a token pair
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: The token pair
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v1/security/token/refresh:
+    post:
+      tags: [Security]
+      operationId: refreshToken
+      summary: Rotate a refresh token
+      description: |
+        Rotation is single-use. Replaying an already-rotated token revokes the entire
+        token family, because a replay is the signature of theft rather than of a retry.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: A freshly rotated token pair
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /v1/security/logout:
+    post:
+      tags: [Security]
+      operationId: logout
+      summary: Revoke the current session
+      responses:
+        '204':
+          description: Logged out
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v1/security/me:
+    get:
+      tags: [Security]
+      operationId: getCurrentUser
+      summary: Describe the authenticated principal
+      responses:
+        '200':
+          description: The current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: An ES256-signed access token
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      required: false
+      description: Zero-based page index
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+        default: 0
+    SizeParam:
+      name: size
+      in: query
+      required: false
+      description: |
+        Page size. A value above the maximum is rejected with 400 INVALID_PAGINATION and
+        never silently clamped.
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+        default: 10
+    IdParam:
+      name: id
+      in: path
+      required: true
+      description: The local record identifier
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    IdOrNameParam:
+      name: idOrName
+      in: path
+      required: true
+      description: An upstream numeric id, or a Pokemon name
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 60
+
+  responses:
+    BadRequest:
+      description: The request was malformed or failed validation
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Unauthorized:
+      description: No valid credentials were presented
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    NotFound:
+      description: No such resource
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Conflict:
+      description: The request conflicts with the current state
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    PreconditionFailed:
+      description: The supplied version is stale
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    TooManyRequests:
+      description: Rate limited
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    BadGateway:
+      description: The upstream catalogue failed
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    ServiceUnavailable:
+      description: Temporarily unable to serve the request
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    GatewayTimeout:
+      description: The upstream catalogue did not answer in time
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+
+  schemas:
+    ProblemDetail:
+      type: object
+      description: RFC 9457 problem detail, with code, traceId, timestamp and errors as extensions
+      required: [type, title, status, code]
+      properties:
+        type:
+          type: string
+          format: uri
+          description: A URI identifying the problem type
+          examples: ['https://pokedex.elatus-dev.com/problems/pokemon-not-found']
+        title:
+          type: string
+          examples: ['Pokemon not found']
+        status:
+          type: integer
+          format: int32
+          minimum: 100
+          maximum: 599
+          examples: [404]
+        detail:
+          type: string
+          examples: ['No Pokemon with id 9999 exists']
+        instance:
+          type: string
+          format: uri-reference
+          examples: ['/api/v1/pokedex/local/9999']
+        code:
+          type: string
+          description: A stable machine-readable code; clients branch on this, never on title
+          pattern: '^[A-Z][A-Z0-9_]*$'
+          examples: ['POKEMON_NOT_FOUND']
+        traceId:
+          type: string
+          examples: ['0af7651916cd43dd8448eb211c80319c']
+        timestamp:
+          type: string
+          format: date-time
+        errors:
+          type: array
+          description: Field-level detail, present only on a 400
+          items:
+            $ref: '#/components/schemas/FieldError'
+    FieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+          examples: ['region']
+        message:
+          type: string
+          examples: ['must be one of KANTO, JOHTO, HOENN, ...']
+
+    Region:
+      type: string
+      description: The closed set of regions
+      enum: [KANTO, JOHTO, HOENN, SINNOH, UNOVA, KALOS, ALOLA, GALAR, HISUI, PALDEA]
+
+    ReplicationState:
+      type: string
+      description: Where a local record sits in its replication lifecycle
+      enum: [DRAFT, PENDING, SYNCED, CUSTOMIZED, STALE, FAILED]
+
+    NameSource:
+      type: string
+      description: Who authored a localized name; only CURATOR rows survive a re-sync
+      enum: [UPSTREAM, CURATOR]
+
+    PageMetadata:
+      type: object
+      required: [page, size, totalElements, totalPages]
+      properties:
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 100
+        totalElements:
+          type: integer
+          format: int64
+          minimum: 0
+        totalPages:
+          type: integer
+          format: int32
+          minimum: 0
+
+    Ability:
+      type: object
+      required: [name, slot, hidden]
+      properties:
+        name:
+          type: string
+          examples: ['overgrow']
+        slot:
+          type: integer
+          format: int32
+          minimum: 1
+        hidden:
+          type: boolean
+
+    Stat:
+      type: object
+      required: [name, baseValue, effort]
+      properties:
+        name:
+          type: string
+          examples: ['special-attack']
+        baseValue:
+          type: integer
+          format: int32
+          minimum: 0
+        effort:
+          type: integer
+          format: int32
+          minimum: 0
+
+    TypeSlot:
+      type: object
+      required: [name, slot]
+      properties:
+        name:
+          type: string
+          examples: ['grass']
+        slot:
+          type: integer
+          format: int32
+          minimum: 1
+
+    LocalizedName:
+      type: object
+      required: [locale, value, source]
+      properties:
+        locale:
+          type: string
+          minLength: 2
+          maxLength: 10
+          examples: ['ja']
+        value:
+          type: string
+          minLength: 1
+          maxLength: 120
+        source:
+          $ref: '#/components/schemas/NameSource'
+
+    EvolutionEdge:
+      type: object
+      description: |
+        One edge of the upstream evolution tree, flattened. The upstream structure nests
+        arbitrarily deep and branches - Eevee has eight children - so it is carried as an
+        edge list rather than a fixed-depth chain.
+      required: [from, to, trigger]
+      properties:
+        from:
+          type: integer
+          format: int32
+          minimum: 1
+        to:
+          type: integer
+          format: int32
+          minimum: 1
+        trigger:
+          type: string
+          examples: ['level-up']
+        minLevel:
+          type: integer
+          format: int32
+          minimum: 1
+
+    Sprite:
+      type: object
+      properties:
+        frontDefault:
+          type: string
+          format: uri
+        officialArtwork:
+          type: string
+          format: uri
+
+    PokemonSummary:
+      type: object
+      description: One catalogue row. Every field the enumeration story requires is present.
+      required: [pokeApiId, name, massKilograms, abilities, stale]
+      properties:
+        pokeApiId:
+          type: integer
+          format: int32
+          minimum: 1
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+        category:
+          type: string
+          maxLength: 60
+          description: From the species genera, English only
+          examples: ['Seed Pokemon']
+        massKilograms:
+          type: number
+          description: Kilograms. Upstream reports hectograms; the conversion happens here.
+          examples: [6.9]
+        sprite:
+          $ref: '#/components/schemas/Sprite'
+        abilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ability'
+        stale:
+          type: boolean
+          description: True when served from the local replica during an upstream outage
+
+    PokemonPage:
+      type: object
+      required: [content, page]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/PokemonSummary'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+
+    PokemonDetail:
+      type: object
+      required: [pokeApiId, name, massKilograms, heightMetres, abilities, stats, types, stale]
+      properties:
+        pokeApiId:
+          type: integer
+          format: int32
+          minimum: 1
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+        category:
+          type: string
+          maxLength: 60
+        description:
+          type: string
+          maxLength: 2000
+          description: Normalised free of the control characters upstream embeds
+        massKilograms:
+          type: number
+          examples: [6.9]
+        heightMetres:
+          type: number
+          examples: [0.7]
+        baseExperience:
+          type: integer
+          format: int32
+          minimum: 0
+        sprite:
+          $ref: '#/components/schemas/Sprite'
+        abilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ability'
+        stats:
+          type: array
+          items:
+            $ref: '#/components/schemas/Stat'
+        types:
+          type: array
+          items:
+            $ref: '#/components/schemas/TypeSlot'
+        localizedNames:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocalizedName'
+        evolution:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvolutionEdge'
+        stale:
+          type: boolean
+
+    LocalPokemon:
+      type: object
+      description: A record in the local replica, replicated and proprietary fields together
+      required: [id, name, replicationState, version]
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        pokeApiId:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Absent exactly when the record is a DRAFT
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+        category:
+          type: string
+          maxLength: 60
+        description:
+          type: string
+          maxLength: 2000
+        massKilograms:
+          type: number
+        heightMetres:
+          type: number
+        baseExperience:
+          type: integer
+          format: int32
+          minimum: 0
+        sprite:
+          $ref: '#/components/schemas/Sprite'
+        abilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ability'
+        stats:
+          type: array
+          items:
+            $ref: '#/components/schemas/Stat'
+        types:
+          type: array
+          items:
+            $ref: '#/components/schemas/TypeSlot'
+        evolution:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvolutionEdge'
+        region:
+          $ref: '#/components/schemas/Region'
+        notes:
+          type: string
+          maxLength: 2000
+        tags:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            minLength: 1
+            maxLength: 30
+        localizedNames:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocalizedName'
+        curatedBy:
+          type: integer
+          format: int64
+          minimum: 1
+        replicationState:
+          $ref: '#/components/schemas/ReplicationState'
+        syncedAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          format: int64
+          minimum: 0
+
+    LocalPokemonPage:
+      type: object
+      required: [content, page]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocalPokemon'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+
+    CreateLocalPokemonRequest:
+      type: object
+      description: |
+        Creates a DRAFT. Supplying a pokeApiId links the record to upstream instead, and
+        is rejected when that id is already replicated.
+      required: [name, massHectograms, heightDecimetres]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+        pokeApiId:
+          type: integer
+          format: int32
+          minimum: 1
+        category:
+          type: string
+          minLength: 1
+          maxLength: 60
+        description:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        massHectograms:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Upstream units, so a round trip through this API loses no precision
+        heightDecimetres:
+          type: integer
+          format: int32
+          minimum: 1
+        baseExperience:
+          type: integer
+          format: int32
+          minimum: 0
+        region:
+          $ref: '#/components/schemas/Region'
+        notes:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        tags:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            minLength: 1
+            maxLength: 30
+
+    ReplaceLocalPokemonRequest:
+      type: object
+      description: |
+        Replaces every proprietary field. Omitting one clears it. Replicated fields are not
+        addressable here - PokeAPI is their authority.
+      required: [version]
+      properties:
+        version:
+          type: integer
+          format: int64
+          minimum: 0
+          description: The version last read; a mismatch is a 412 rather than a lost update
+        region:
+          $ref: '#/components/schemas/Region'
+        notes:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        tags:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            minLength: 1
+            maxLength: 30
+        localizedNames:
+          type: array
+          items:
+            $ref: '#/components/schemas/CuratorLocalizedName'
+
+    PatchLocalPokemonRequest:
+      type: object
+      description: Amends only the proprietary fields present in the body
+      required: [version]
+      properties:
+        version:
+          type: integer
+          format: int64
+          minimum: 0
+        region:
+          $ref: '#/components/schemas/Region'
+        notes:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        tags:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            minLength: 1
+            maxLength: 30
+        localizedNames:
+          type: array
+          items:
+            $ref: '#/components/schemas/CuratorLocalizedName'
+
+    CuratorLocalizedName:
+      type: object
+      description: A curator-authored name. Source is implied and cannot be set to UPSTREAM.
+      required: [locale, value]
+      properties:
+        locale:
+          type: string
+          minLength: 2
+          maxLength: 10
+        value:
+          type: string
+          minLength: 1
+          maxLength: 120
+
+    SyncBatchRequest:
+      type: object
+      description: An inclusive upstream id range, bounded so a batch cannot become an outage
+      required: [from, to]
+      properties:
+        from:
+          type: integer
+          format: int32
+          minimum: 1
+        to:
+          type: integer
+          format: int32
+          minimum: 1
+
+    SyncBatchSummary:
+      type: object
+      required: [succeeded, failed, skipped, failedIds]
+      properties:
+        succeeded:
+          type: integer
+          format: int32
+          minimum: 0
+        failed:
+          type: integer
+          format: int32
+          minimum: 0
+        skipped:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Already present and still fresh
+        failedIds:
+          type: array
+          items:
+            type: integer
+            format: int32
+            minimum: 1
+
+    RegisterRequest:
+      type: object
+      required: [username, email, password]
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 30
+          pattern: '^[a-zA-Z0-9][a-zA-Z0-9._-]{2,29}$'
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          format: password
+          minLength: 12
+          maxLength: 128
+
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 30
+        password:
+          type: string
+          format: password
+          minLength: 1
+          maxLength: 128
+
+    RefreshRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+          minLength: 1
+
+    TokenPair:
+      type: object
+      required: [accessToken, refreshToken, tokenType, expiresIn]
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        tokenType:
+          type: string
+          enum: [Bearer]
+        expiresIn:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Seconds until the access token expires
+
+    CurrentUser:
+      type: object
+      description: The principal. Carries no credential material.
+      required: [id, username, roles]
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        roles:
+          type: array
+          items:
+            type: string
+            enum: [CURATOR, ADMIN]
+        createdAt:
+          type: string
+          format: date-time
