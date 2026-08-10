@@ -6,7 +6,7 @@
 | **Parent** | [WF-US04 Local Data Modification](../workflows/WF-US04-local-data-modification.md) |
 | **Objective contribution** | The six operations, and the error contract the story grades |
 | **Estimate** | M |
-| **Status** | not started |
+| **Status** | done |
 
 ## Objective
 
