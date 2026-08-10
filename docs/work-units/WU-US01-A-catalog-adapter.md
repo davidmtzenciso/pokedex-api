@@ -6,7 +6,7 @@
 | **Parent** | [WF-US01 Pokémon Enumeration](../workflows/WF-US01-pokemon-enumeration.md) |
 | **Objective contribution** | The upstream integration, and every way it can fail |
 | **Estimate** | L |
-| **Status** | not started |
+| **Status** | done |
 
 ## Objective
 
@@ -150,10 +150,10 @@ only non-English genera · 404 · 500 · delay beyond timeout · malformed JSON 
 
 ## Exit Criteria
 
-- [ ] Eevee renders eight branches
-- [ ] Concurrency never exceeds 16; a default page issues 21 upstream calls
-- [ ] Every failure stub has a defined, tested outcome
-- [ ] No retry on 4xx
+- [x] Eevee renders eight branches — `EvolutionChainMapperTest`, and end to end through the adapter in `PokeApiFailureModeComponentTest`
+- [x] Concurrency never exceeds the bound; a default page issues **exactly 21** upstream calls. The in-flight peak is observed with a latch-gated WireMock transformer, not inferred from timing
+- [x] Every failure stub has a defined, tested outcome — 404, 500, 429, read timeout, malformed JSON, non-English genera, circuit open
+- [x] No retry on 4xx — asserted by request count on a stubbed 404
 
 ```bash
 mvn -B verify
