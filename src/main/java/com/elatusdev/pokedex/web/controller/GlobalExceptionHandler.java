@@ -7,13 +7,11 @@ import com.elatusdev.pokedex.domain.exception.TokenReuseDetectedException;
 import com.elatusdev.pokedex.domain.exception.UserAlreadyExistsException;
 import com.elatusdev.pokedex.web.security.ProblemDetails;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 // The one place an exception becomes a status code. This advice currently covers the WF-AUTH
 // rows of the §9.5 matrix; the catalogue and local-CRUD rows land with the stories that
@@ -47,14 +45,16 @@ public class GlobalExceptionHandler {
                 HttpStatus.CONFLICT, "Conflict", failure.getMessage(), "USER_ALREADY_EXISTS", uri(request));
     }
 
-    // IA9 — parameter validation surfaces as TWO exception types. Mapping one of them
-    // returns 500 for half of all validation failures, and the half is not obvious.
-    @ExceptionHandler({
-        InvalidPokemonDataException.class,
-        ConstraintViolationException.class,
-        HandlerMethodValidationException.class,
-        MethodArgumentNotValidException.class
-    })
+    // Request BODY validation only. The two PARAMETER validation types of IA9 —
+    // ConstraintViolationException and HandlerMethodValidationException — are deliberately
+    // NOT claimed here: CatalogExceptionHandler maps them to INVALID_PAGINATION, which
+    // §9.5 requires and which is strictly more specific than VALIDATION_ERROR. Two advices
+    // claiming one exception type is resolved by advice ordering rather than by specificity,
+    // so the broader one silently wins and the better code disappears.
+    //
+    // WU-US04-B folds both advices into this class; until then the split is by exception
+    // type and neither side overlaps the other.
+    @ExceptionHandler({InvalidPokemonDataException.class, MethodArgumentNotValidException.class})
     ProblemDetail handleValidation(Exception failure, HttpServletRequest request) {
         return ProblemDetails.of(
                 HttpStatus.BAD_REQUEST, "Bad Request", failure.getMessage(), "VALIDATION_ERROR", uri(request));
