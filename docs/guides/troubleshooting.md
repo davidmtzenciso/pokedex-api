@@ -26,7 +26,7 @@ So you spend two minutes on a known failure mode instead of forty.
 | Testcontainers: connection refused | Docker daemon not running | Start Docker, then `mvn -B verify` |
 | Build fails on an "Architecture Violation" | An ArchUnit rule | See [archunit-governance.md](../guides/archunit-governance.md) — move the dependency, don't suppress |
 | Coverage gate fails with no new issues of my own | Touched a line inside pre-existing duplicated code | De-duplicate the block you touched |
-| Copyright gate fails | A new file is missing the header | Add `Copyright (c) 2026 ElatusDev` in the first 10 lines |
+| Source-hygiene gate fails on a header | A file carries a copyright or licence banner | Delete it. The first line of a `.java` file is its `package` declaration |
 | A stale class survives a rebuild | Incremental compile confusion | `mvn -B clean verify` |
 
 ## Runtime behaviour

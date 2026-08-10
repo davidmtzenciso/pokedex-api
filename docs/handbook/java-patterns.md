@@ -187,7 +187,7 @@ to apply: **if deleting the comment loses no information, it was noise.**
 ### Exclusions
 
 Generated sources carry Javadoc from the generator. They are excluded from this rule, as they
-are from coverage and the copyright check — they are not our code.
+are from coverage and the source-hygiene gate — they are not our code.
 
 ### Enforcement
 

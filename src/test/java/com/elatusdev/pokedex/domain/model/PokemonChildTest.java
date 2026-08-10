@@ -1,11 +1,10 @@
-// Copyright (c) 2026 ElatusDev
 package com.elatusdev.pokedex.domain.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.elatusdev.pokedex.domain.exception.InvalidPokemonDataException;
-import com.elatusdev.pokedex.domain.vo.PokeApiId;
+import com.elatusdev.pokedex.shared.domain.exception.InvalidPokemonDataException;
+import com.elatusdev.pokedex.shared.domain.vo.PokeApiId;
 import java.util.Optional;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

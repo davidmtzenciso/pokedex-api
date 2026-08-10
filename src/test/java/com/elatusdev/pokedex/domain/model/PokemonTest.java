@@ -1,23 +1,22 @@
-// Copyright (c) 2026 ElatusDev
 package com.elatusdev.pokedex.domain.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.elatusdev.pokedex.domain.exception.IllegalStateTransitionException;
-import com.elatusdev.pokedex.domain.exception.InvalidPokemonDataException;
-import com.elatusdev.pokedex.domain.vo.Category;
-import com.elatusdev.pokedex.domain.vo.Description;
-import com.elatusdev.pokedex.domain.vo.Height;
-import com.elatusdev.pokedex.domain.vo.Mass;
-import com.elatusdev.pokedex.domain.vo.Notes;
-import com.elatusdev.pokedex.domain.vo.PokeApiId;
-import com.elatusdev.pokedex.domain.vo.PokemonId;
-import com.elatusdev.pokedex.domain.vo.PokemonName;
-import com.elatusdev.pokedex.domain.vo.Region;
-import com.elatusdev.pokedex.domain.vo.Sprite;
-import com.elatusdev.pokedex.domain.vo.Tag;
-import com.elatusdev.pokedex.domain.vo.UserId;
+import com.elatusdev.pokedex.pokedex.domain.exception.IllegalStateTransitionException;
+import com.elatusdev.pokedex.shared.domain.exception.InvalidPokemonDataException;
+import com.elatusdev.pokedex.shared.domain.vo.Category;
+import com.elatusdev.pokedex.shared.domain.vo.Description;
+import com.elatusdev.pokedex.shared.domain.vo.Height;
+import com.elatusdev.pokedex.shared.domain.vo.Mass;
+import com.elatusdev.pokedex.pokedex.domain.vo.Notes;
+import com.elatusdev.pokedex.shared.domain.vo.PokeApiId;
+import com.elatusdev.pokedex.pokedex.domain.vo.PokemonId;
+import com.elatusdev.pokedex.shared.domain.vo.PokemonName;
+import com.elatusdev.pokedex.pokedex.domain.vo.Region;
+import com.elatusdev.pokedex.shared.domain.vo.Sprite;
+import com.elatusdev.pokedex.pokedex.domain.vo.Tag;
+import com.elatusdev.pokedex.identity.domain.vo.UserId;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;

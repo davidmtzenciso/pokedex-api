@@ -131,7 +131,7 @@ deliberate probe can lower them without editing the POM.
 **How**
 One bash script run by `exec-maven-plugin` at the `validate` phase, checking:
 
-1. `Copyright (c) 2026 ElatusDev` in the first 10 lines of every `.java`
+1. **No file header** — no copyright or licence banner in any `.java`
 2. **No `/**` anywhere in `src/main/java`** — Javadoc is forbidden ([java patterns](../handbook/java-patterns.md#no-javadoc))
 3. No `// NOSONAR` — the suppression ladder
 
@@ -228,7 +228,7 @@ Built and verified in this repository:
 |---|---|
 | `pom.xml`, four layer packages | done — compiles on Spring Boot 4.1.0, JDK 25, release 24 |
 | JaCoCo 90/90 merged gate | wired; thresholds are overridable properties |
-| Source hygiene (copyright · no-Javadoc · no-NOSONAR) | **proven** — each violation was introduced, seen to fail the build, then reverted |
+| Source hygiene (no-header · no-Javadoc · no-NOSONAR) | **proven** — each violation was introduced, seen to fail the build, then reverted |
 | Maven enforcer | wired |
 | `PokedexApplication` | exists |
 | `ApplicationContextLoadsComponentTest` | **not yet written** (A6) |

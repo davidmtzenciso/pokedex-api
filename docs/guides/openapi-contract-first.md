@@ -97,7 +97,7 @@ reads as a type mismatch and takes an hour to diagnose. Define once, `$ref` ever
 > `/v1/pokedex/pokemon` is reachable at `/api/v1/pokedex/pokemon`. The spec does not
 > include `/api`.
 
-> **Generated sources are excluded from coverage, Sonar, and the copyright gate.** If your
+> **Generated sources are excluded from coverage and the source-hygiene gate.** If your
 > coverage number moves unexpectedly after a spec change, check the exclusion patterns.
 
 > **Validation annotations come from the spec.** `minimum`, `maxLength`, `pattern`, and

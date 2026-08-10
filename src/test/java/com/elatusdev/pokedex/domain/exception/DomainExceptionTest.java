@@ -1,11 +1,10 @@
-// Copyright (c) 2026 ElatusDev
 package com.elatusdev.pokedex.domain.exception;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.elatusdev.pokedex.domain.model.ReplicationState;
-import com.elatusdev.pokedex.domain.vo.PokeApiId;
-import com.elatusdev.pokedex.domain.vo.PokemonId;
+import com.elatusdev.pokedex.pokedex.domain.model.ReplicationState;
+import com.elatusdev.pokedex.shared.domain.vo.PokeApiId;
+import com.elatusdev.pokedex.pokedex.domain.vo.PokemonId;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 

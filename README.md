@@ -225,6 +225,7 @@ it — never edit or delete the original.
 | [0009](docs/adr/0009-no-bundled-client.md) | The service ships no client | Accepted |
 | [0010](docs/adr/0010-hard-deletes.md) | Deletes are hard | Accepted |
 | [0011](docs/adr/0011-container-image-strategy.md) | A hand-written layered Dockerfile, not buildpacks | Accepted |
+| [0012](docs/adr/0012-flyway-versioned-migrations.md) | Flyway versioned migrations, not `ddl-auto` | Accepted |
 
 **The three worth reading first.** [0007](docs/adr/0007-proprietary-field-merge-policy.md)
 answers a conflict the requirements never state but every correct implementation must

@@ -131,7 +131,7 @@ single `pom.xml`.
 | **Depends on** | B3 |
 
 **How**
-Exclude `**/generated-sources/**` from JaCoCo, the copyright check, and any static analysis.
+Exclude `**/generated-sources/**` from JaCoCo and the source-hygiene gate.
 
 | Field | Value |
 |---|---|

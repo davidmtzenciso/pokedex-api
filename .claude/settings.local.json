@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker info *)",
+      "Bash(java -version)",
+      "Bash(mvn -v)",
+      "Bash(mvn -B -q verify -DskipITs)",
+      "Bash(mvn -B -q dependency:tree -Dincludes=org.flywaydb:*,org.postgresql:*,org.testcontainers:*)",
+      "Bash(mvn -B help:evaluate -Dexpression=flyway.version -q -DforceStdout)"
+    ]
+  }
+}

@@ -52,11 +52,16 @@ CREATE UNIQUE INDEX ux_pokemon_poke_api_id
     ON pokemon (poke_api_id) WHERE poke_api_id IS NOT NULL;
 ```
 
+Set `spring.jpa.hibernate.ddl-auto: validate` in the same change. Flyway owns the schema;
+Hibernate checks the entities against it and refuses to boot on a mismatch, but never
+modifies it — [ADR-0012](../adr/0012-flyway-versioned-migrations.md).
+
 **Conventions**
 - Never edit an applied migration; add a corrective one → [persistence patterns](../handbook/persistence-patterns.md)
 
 **Avoid**
 - A plain unique constraint on `poke_api_id` — `DRAFT` rows have none, so only one could exist
+- Any `ddl-auto` value that writes (`update`, `create`, `create-drop`). It cannot generate the partial index, so the schema would be silently wrong
 
 | Field | Value |
 |---|---|

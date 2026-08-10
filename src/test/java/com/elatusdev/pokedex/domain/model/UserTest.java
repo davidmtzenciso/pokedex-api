@@ -1,14 +1,13 @@
-// Copyright (c) 2026 ElatusDev
 package com.elatusdev.pokedex.domain.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.elatusdev.pokedex.domain.exception.InvalidPokemonDataException;
-import com.elatusdev.pokedex.domain.vo.Email;
-import com.elatusdev.pokedex.domain.vo.PasswordHash;
-import com.elatusdev.pokedex.domain.vo.UserId;
-import com.elatusdev.pokedex.domain.vo.Username;
+import com.elatusdev.pokedex.shared.domain.exception.InvalidPokemonDataException;
+import com.elatusdev.pokedex.identity.domain.vo.Email;
+import com.elatusdev.pokedex.identity.domain.vo.PasswordHash;
+import com.elatusdev.pokedex.identity.domain.vo.UserId;
+import com.elatusdev.pokedex.identity.domain.vo.Username;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Optional;

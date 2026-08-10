@@ -110,7 +110,7 @@ last git tag. A breaking change to an existing operation fails it — see
 
 | Gate | Failure looks like |
 |---|---|
-| Copyright header | Any `.java` outside generated sources missing `Copyright (c) 2026 ElatusDev` in its first 10 lines. Bound to the `validate` phase |
+| File header | Any `.java` containing a copyright or licence banner. Headers are **forbidden**, not required. Bound to the `validate` phase |
 | Dependency convergence | Maven enforcer blocks conflicting transitive versions |
 | Suppression ladder | A grep target fails on `// NOSONAR` or `sonar.exclusions` |
 | Javadoc | A grep target fails on `/**` in `src/main/java` outside generated sources — see [java patterns](../handbook/java-patterns.md#no-javadoc) |

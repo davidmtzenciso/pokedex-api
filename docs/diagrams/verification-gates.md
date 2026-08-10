@@ -4,7 +4,7 @@ Everything runs locally. There is no pipeline — `make verify` is the gate of r
 
 ```mermaid
 flowchart TD
-  V["make verify"] --> H["1 · Copyright header check<br/>bound to the validate phase"]
+  V["make verify"] --> H["1 · Source hygiene<br/>bound to the validate phase"]
   H --> E["2 · Maven enforcer<br/>dependency convergence"]
   E --> C["3 · Compile"]
   C --> A["4 · ArchUnit · 16 rules"]
@@ -29,7 +29,7 @@ flowchart TD
 
 | # | Gate | Proves | Command |
 |---|---|---|---|
-| 1 | Copyright header · no Javadoc | Header present; no `/**` outside generated sources | bound to `validate` |
+| 1 | Source hygiene | No file header; no `/**` outside generated sources; no `// NOSONAR` | bound to `validate` |
 | 2 | Enforcer | No conflicting transitive versions | bound to `validate` |
 | 3 | Compile | It builds across all four layer packages | `mvn -B compile` |
 | 4 | ArchUnit | Structural discipline held | `mvn -B test -Dtest='*ArchitectureTest'` |

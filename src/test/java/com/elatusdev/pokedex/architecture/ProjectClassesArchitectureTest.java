@@ -1,4 +1,3 @@
-// Copyright (c) 2026 ElatusDev
 package com.elatusdev.pokedex.architecture;
 
 import static org.assertj.core.api.Assertions.assertThat;

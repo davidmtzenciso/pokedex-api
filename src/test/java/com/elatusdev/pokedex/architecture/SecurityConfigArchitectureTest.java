@@ -1,4 +1,3 @@
-// Copyright (c) 2026 ElatusDev
 package com.elatusdev.pokedex.architecture;
 
 import static com.tngtech.archunit.core.domain.properties.HasName.Predicates.nameMatching;

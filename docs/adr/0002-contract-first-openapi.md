@@ -39,7 +39,7 @@ The [work-unit DAG](../diagrams/work-unit-dag.md) places WU-000-B — the spec a
 ### Negative
 - Every endpoint change starts with a YAML edit and a regeneration. This feels slow for the first three endpoints and pays back from roughly the fifth onward.
 - Generator configuration is load-bearing and must be correct before any controller exists — hence its position on the critical path and risk R3 in the workflow.
-- Generated sources must be excluded from coverage, Sonar, and the copyright-header gate.
+- Generated sources must be excluded from coverage and the source-hygiene gate.
 
 ### Neutral
 - `useTags=false` means endpoints group by first path segment, not by spec `tags:`. Re-tagging a path has no effect — a known and documented gotcha.

@@ -79,6 +79,10 @@ same record for no benefit.
 
 ## Flyway
 
+Flyway owns the schema; `ddl-auto` is set to **`validate`**, so Hibernate may check the
+entities against it and refuse to boot on a mismatch, but may never modify it. Why, and what
+that costs: [ADR-0012](../adr/0012-flyway-versioned-migrations.md).
+
 ```
 V1__schema.sql          tables, indexes, constraints
 V2__seed.sql            the original 151 + demo users

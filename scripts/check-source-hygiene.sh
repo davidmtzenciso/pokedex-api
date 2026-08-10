@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Copyright (c) 2026 ElatusDev
 # Three gates that fail even when the code compiles. See docs/guides/build-and-test.md.
 set -uo pipefail
 cd "$(dirname "$0")/.."
@@ -7,12 +6,12 @@ FAIL=0
 SRC=src/main/java
 [ -d "$SRC" ] || exit 0
 
-# 1. copyright header in the first 10 lines of every source file
-while IFS= read -r f; do
-  head -10 "$f" | grep -q 'Copyright (c) 2026 ElatusDev' || { echo "MISSING COPYRIGHT HEADER: $f"; FAIL=1; }
-done < <(find "$SRC" src/test/java -name '*.java' 2>/dev/null)
+# 1. no file headers  (docs/handbook/java-patterns.md#no-file-headers)
+if grep -rln --include='*.java' -i 'Copyright\|SPDX-License-Identifier' src 2>/dev/null; then
+  echo "FILE HEADER FORBIDDEN: no copyright or licence banner on any source file."; FAIL=1
+fi
 
-# 2. no Javadoc  (ADR-0011 / java-patterns.md#no-javadoc)
+# 2. no Javadoc  (docs/handbook/java-patterns.md#no-javadoc)
 if grep -rn --include='*.java' '/\*\*' "$SRC" 2>/dev/null; then
   echo "JAVADOC FORBIDDEN: names carry what, tests carry how, ADRs carry why."; FAIL=1
 fi
