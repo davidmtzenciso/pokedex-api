@@ -17,6 +17,32 @@ make keys                 # generate the dev ES256 keystore
 docker compose up --build # postgres + redis + api
 ```
 
+> **`compose.yaml` currently brings up Postgres and Redis, not the API.** The `api` service
+> needs a Dockerfile and that belongs to [WU-999-A](docs/work-units/WU-999-A-containerisation.md);
+> until it lands, run the application yourself against the two containers:
+>
+> ```bash
+> docker compose up -d      # postgres + redis, both with healthchecks
+> POKEDEX_DB_URL=jdbc:postgresql://localhost:5432/pokedex \
+> POKEDEX_DB_USER=pokedex POKEDEX_DB_PASSWORD=pokedex-dev-only \
+> mvn spring-boot:run
+> ```
+>
+> **`POKEDEX_DB_URL` is the part people lose an hour to.** Its default is
+> `jdbc:postgresql://postgres:5432/pokedex` — `postgres` is the *compose service name*, which
+> resolves inside the compose network and nowhere else. Running the app from your IDE or from
+> `mvn spring-boot:run` means you are on the host, so it has to be `localhost`. The failure is
+> `UnknownHostException: postgres`, and it looks like a broken database rather than a
+> perfectly healthy one you are asking for by the wrong name.
+>
+> `POKEDEX_DB_PASSWORD` has no default on purpose — a credential with a fallback in a tracked
+> file is a credential in the image (`java:S6437`). `pokedex-dev-only` is the throwaway
+> `compose.yaml` sets; production supplies its own from the environment.
+>
+> Tests need none of this. They start their own `postgres:17-alpine` through Testcontainers
+> and wire it with `@ServiceConnection`, so `mvn verify` needs a Docker daemon and no
+> containers of yours.
+
 | What | Where |
 |---|---|
 | API | http://localhost:8080/api |
