@@ -1,5 +1,6 @@
 package com.elatusdev.pokedex.infrastructure.pokeapi;
 
+import com.elatusdev.pokedex.domain.port.CachePort;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,7 +31,8 @@ public class PokeApiConfig {
             PokeApiClient client,
             PokeApiMapper mapper,
             EvolutionChainMapper evolutionMapper,
-            PokeApiProperties properties) {
-        return new PokeApiCatalogAdapter(client, mapper, evolutionMapper, properties);
+            PokeApiProperties properties,
+            CachePort cache) {
+        return new PokeApiCatalogAdapter(client, mapper, evolutionMapper, properties, cache);
     }
 }

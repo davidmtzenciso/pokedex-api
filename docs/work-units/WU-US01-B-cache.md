@@ -6,7 +6,7 @@
 | **Parent** | [WF-US01 Pokémon Enumeration](../workflows/WF-US01-pokemon-enumeration.md) |
 | **Objective contribution** | Turns a 21-call cold page into a one-read warm page |
 | **Estimate** | S |
-| **Status** | not started |
+| **Status** | done |
 
 ## Objective
 
@@ -77,9 +77,14 @@ Evict `pokeapi:pokemon:{id}` and every `pokeapi:page:*` on a successful sync.
 
 ## Exit Criteria
 
-- [ ] Cache outage degrades rather than fails
-- [ ] A warm page issues **zero** upstream calls (AC-US01-4)
-- [ ] Re-sync evicts
+- [x] Cache outage degrades rather than fails — proven against a Redis container stopped mid-test; reads, writes and evictions all continue
+- [x] A warm page issues **zero** upstream calls (AC-US01-4) — 21 cold, 0 warm
+- [x] Re-sync evicts — `evictByPrefix` added to `CachePort`, and the page keys go back upstream after eviction
+
+> **The command timeout is part of failing open.** With Lettuce's default, a read against a
+> stopped Redis blocked for ~5 minutes before surfacing an error — the cache stalls the
+> request instead of degrading it. `spring.data.redis.timeout` bounds it in production and
+> the component test bounds it the same way.
 
 ```bash
 mvn -B verify
