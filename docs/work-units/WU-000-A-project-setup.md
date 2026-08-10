@@ -131,7 +131,7 @@ deliberate probe can lower them without editing the POM.
 **How**
 One bash script run by `exec-maven-plugin` at the `validate` phase, checking:
 
-1. `Copyright (c) 2026 ElatusDev` in the first 10 lines of every `.java`
+1. No file header on any `.java` — the first line is the `package` declaration
 2. **No `/**` anywhere in `src/main/java`** — Javadoc is forbidden ([java patterns](../handbook/java-patterns.md#no-javadoc))
 3. No `// NOSONAR` — the suppression ladder
 

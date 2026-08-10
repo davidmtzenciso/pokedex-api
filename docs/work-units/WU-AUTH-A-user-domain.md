@@ -6,7 +6,7 @@
 | **Parent** | [WF-AUTH User Management](../workflows/WF-AUTH-user-management.md) |
 | **Objective contribution** | The `User` aggregate, refresh-token families, and the rotation rule |
 | **Estimate** | S |
-| **Status** | not started |
+| **Status** | done |
 
 ## Objective
 

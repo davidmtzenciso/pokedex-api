@@ -38,7 +38,7 @@ an empty directory.
 |---|---|
 | `pom.xml` | Single module, Spring Boot 4.1.0, `maven.compiler.release=24`, exact versions, no ranges |
 | Four layer packages | `domain` · `application` · `infrastructure` · `web` under `com.elatusdev.pokedex` |
-| `scripts/check-source-hygiene.sh` | Copyright · no-Javadoc · no-NOSONAR, bound to `validate`. **Each proven to fail on a real violation** |
+| `scripts/check-source-hygiene.sh` | No-file-header · no-Javadoc · no-NOSONAR, bound to `validate`. **Each proven to fail on a real violation** |
 | JaCoCo 90/90 | Merged across Surefire and Failsafe, bound to `verify`. Thresholds are overridable properties |
 | Maven enforcer, PIT, Failsafe | Wired |
 | `Makefile` | `verify`, `test`, `arch`, `mutation`, `contract-check`, `e2e`, `up`, `down`, `keys` |
@@ -112,7 +112,7 @@ assumption.
 3. **`ClockPort`, never `Instant.now()`.** Every time-dependent rule must be testable without sleeping.
 4. **The merge policy is a property test**, not an example test. Generate field combinations.
 5. **Never `any()` matchers.** Exact values in stubs and verifications, or `argThat` with a real predicate.
-6. Copyright header on every new `.java`.
+6. No file header on any new `.java` — the first line is the `package` declaration.
 7. No Javadoc. Names carry *what*, tests carry *how*, ADRs carry *why*.
 
 ---
@@ -459,7 +459,7 @@ Append one row per work unit. This is the raw material for the retrospective.
 - [ ] Coverage 90/90; mutation ≥ 85% `domain`, ≥ 75% `application`
 - [ ] Zero ArchUnit violations; no frozen rules; no `// NOSONAR`
 - [ ] `gitleaks` clean
-- [ ] Copyright header on every source file; no Javadoc anywhere
+- [ ] No file header on any source file; no Javadoc anywhere
 - [ ] Execution report written
 - [ ] Retrospective written
 - [ ] Branch pushed; PR opened

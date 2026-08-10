@@ -5,6 +5,8 @@ import java.util.Objects;
 
 public record PasswordHash(String value) {
 
+    public static final String MASK = "***";
+
     public PasswordHash {
         Objects.requireNonNull(value, "passwordHash");
         if (value.isBlank()) {
@@ -14,6 +16,6 @@ public record PasswordHash(String value) {
 
     @Override
     public String toString() {
-        return "***";
+        return MASK;
     }
 }

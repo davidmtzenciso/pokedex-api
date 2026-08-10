@@ -488,7 +488,7 @@ Secrets never live in `*.properties` (`java:S6437`, `docker:S6472`). The dev key
 | H8 | Records for immutable data; `Stream.toList()`; text blocks for multi-line SQL/JSON | `java:S6206`, `java:S6204`, `java:S6126` |
 | H9 | Method body ≤ 20 lines; class ≤ 300 lines (500 for entities/config/controllers); cyclomatic ≤ 10; nesting ≤ 3 | `B-01`–`B-04` |
 | H10 | IDs are always `Long`, never `Integer` (`pokeApiId` is the documented exception — it is an upstream identifier, not ours) | `B-14` |
-| H11 | Copyright header `Copyright (c) 2026 ElatusDev` in the first 10 lines of every `.java` and `.ts`/`.tsx` | `U-01` |
+| H11 | No file header on any `.java` — the first line is the `package` declaration | `U-01` |
 | H12 | Date literals use `java.time.Month`; `.now()` always takes a `Clock` or `ZoneId` | `java:S8694`, `java:S8688` |
 | H13 | JWT is **ES256**; reject `alg:none`; validate `iss`/`aud`/`exp`; key by `kid` | `jwt-jose.md`, `java:S5659` |
 | H14 | Passwords hashed with BCrypt; `HashingService`-style SHA-256 is **not** for passwords | `java:S5344` |
@@ -580,7 +580,7 @@ proprietary field is byte-identical to its prior value** (F7).
 
 **AC9 — Architecture**: All 16 ArchUnit rules pass, none frozen, none allowlisted.
 
-**AC9b — Copyright**: Every `.java` outside generated sources carries the header.
+**AC9b — No file header**: Every `.java` outside generated sources begins with its `package` declaration; no copyright, licence, SPDX, author or date banner appears anywhere.
 
 **AC9c — No Javadoc**: `grep -rn --include=*.java '/\*\*' src/main/java` returns nothing outside generated sources.
 
@@ -607,7 +607,7 @@ last tag.
 | §4.4 | 0 | Every invariant carries a named test |
 | §4.7 | 0 | Every formula maps to a test or AC; every `PRE` violation has an error row |
 | §5 | 3 | Layer, naming, and contract rules promoted to ArchUnit L1–L4, N1–N5, OA1 |
-| §9 | 2 | Copyright promoted to a `validate`-phase check; suppression ladder to a grep target in `make verify` |
+| §9 | 2 | The file-header rule promoted to a `validate`-phase check; suppression ladder to a grep target in `make verify` |
 | §10 | 4 | Hosted-analyser gates (duplication, smells, hotspots) **deleted rather than restated** — nothing local enforces them |
 | §10 AC10 | 1 | "Verifies interactions" was unfalsifiable while `any()` was permitted — promoted to H25 and AC10b |
 | §9 H26 | 1 | "No Javadoc" was a preference until it had a grep gate — promoted to AC9c |

@@ -1,6 +1,8 @@
 package com.elatusdev.pokedex.domain.port;
 
+import com.elatusdev.pokedex.domain.model.IssuedToken;
 import com.elatusdev.pokedex.domain.model.Role;
+import com.elatusdev.pokedex.domain.model.VerifiedToken;
 import com.elatusdev.pokedex.domain.vo.UserId;
 import java.time.Instant;
 import java.util.Optional;
@@ -9,9 +11,9 @@ import java.util.Set;
 // no PII in a claim: signed is not encrypted, so the subject is an id and never an email
 public interface TokenIssuer {
 
-    String issueAccessToken(UserId subject, Set<Role> roles, Instant issuedAt);
+    IssuedToken issueAccessToken(UserId subject, Set<Role> roles, Instant issuedAt);
 
-    String issueRefreshToken(UserId subject, String familyId, Instant issuedAt);
+    IssuedToken issueRefreshToken(UserId subject, String familyId, Instant issuedAt);
 
-    Optional<UserId> verify(String token, Instant now);
+    Optional<VerifiedToken> verify(String token, Instant now);
 }
