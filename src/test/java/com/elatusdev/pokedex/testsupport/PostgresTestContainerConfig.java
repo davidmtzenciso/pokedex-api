@@ -1,4 +1,3 @@
-// Copyright (c) 2026 ElatusDev
 package com.elatusdev.pokedex.testsupport;
 
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;

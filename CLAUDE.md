@@ -121,7 +121,7 @@ dependency. Define a port and implement it in `infrastructure`.
 - IDs are `Long`. The one exception is `pokeApiId`, an upstream identifier we do not own.
 - Dates: `java.time.Month`, never a bare int month. `.now()` always takes a `Clock` or `ZoneId`.
 - Size caps: method body ≤ 20 lines, class ≤ 300 (500 for entities, config, controllers), cyclomatic ≤ 10, nesting ≤ 3. Use guard clauses.
-- Copyright header `Copyright (c) 2026 ElatusDev` in the first 10 lines of every `.java`.
+- **No file headers.** No copyright banner, no licence block, no `SPDX-License-Identifier`, no author or date tag. The first line of every `.java` file is its `package` declaration. This is an interview exercise, not a corporate codebase — a banner on every file is noise the reader has to scroll past. Enforced by `scripts/check-source-hygiene.sh`.
 - **No Javadoc.** Not on public API, not anywhere. A comment that restates the signature goes stale and misleads. Names carry *what*, tests carry *how*, ADRs carry *why*. A short `//` comment explaining a non-obvious **why** is fine — if deleting it loses no information, it was noise. Generated sources excluded.
 - **Logging**: `domain` has no logger and does not log. Never log a token, password hash, PII, or full body. Log the fan-out as a **summary**, not per call. Log *or* rethrow, never both. See [logging](docs/handbook/logging.md).
 
