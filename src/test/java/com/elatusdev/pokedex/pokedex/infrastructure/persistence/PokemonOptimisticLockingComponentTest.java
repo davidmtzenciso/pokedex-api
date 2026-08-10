@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import com.elatusdev.pokedex.testsupport.PokemonFixture;
 
 // Two curators read the same record and both write. Without @Version the second write wins
 // silently and the first curator's edit is gone — a data-loss bug with no error, no log line

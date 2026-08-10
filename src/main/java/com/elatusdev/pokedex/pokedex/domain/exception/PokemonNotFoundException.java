@@ -1,6 +1,7 @@
 package com.elatusdev.pokedex.pokedex.domain.exception;
 
 import com.elatusdev.pokedex.pokedex.domain.vo.PokemonId;
+import com.elatusdev.pokedex.pokedex.domain.model.Pokemon;
 
 public class PokemonNotFoundException extends RuntimeException {
 

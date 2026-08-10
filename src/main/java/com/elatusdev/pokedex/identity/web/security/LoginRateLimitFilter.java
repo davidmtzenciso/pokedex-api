@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import com.elatusdev.pokedex.shared.web.error.ProblemDetails;
 
 // First in the chain: an unauthenticated flood is rejected before it costs a signature
 // verification, let alone a BCrypt round at cost 12 — which is the expensive thing an

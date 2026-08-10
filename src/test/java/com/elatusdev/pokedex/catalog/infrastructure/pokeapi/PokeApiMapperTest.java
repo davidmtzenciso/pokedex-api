@@ -14,6 +14,7 @@ import com.elatusdev.pokedex.shared.domain.vo.PokeApiId;
 import com.elatusdev.pokedex.shared.domain.vo.PokemonName;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import com.elatusdev.pokedex.testsupport.PokeApiFixtures;
 
 class PokeApiMapperTest {
 

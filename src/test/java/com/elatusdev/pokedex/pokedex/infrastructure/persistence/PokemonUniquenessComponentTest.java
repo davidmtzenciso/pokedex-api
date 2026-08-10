@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import com.elatusdev.pokedex.testsupport.PokemonFixture;
 
 // I1 / F1. Both halves matter and only one of them is obvious: the index must reject a
 // duplicate poke_api_id, and it must still permit any number of DRAFT rows that have none.

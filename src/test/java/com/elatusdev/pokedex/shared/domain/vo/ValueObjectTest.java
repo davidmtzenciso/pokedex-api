@@ -9,6 +9,16 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import com.elatusdev.pokedex.pokedex.domain.vo.Tag;
+import com.elatusdev.pokedex.pokedex.domain.vo.Region;
+import com.elatusdev.pokedex.pokedex.domain.vo.PokemonId;
+import com.elatusdev.pokedex.pokedex.domain.vo.Notes;
+import com.elatusdev.pokedex.pokedex.domain.model.Pokemon;
+import com.elatusdev.pokedex.identity.domain.vo.Username;
+import com.elatusdev.pokedex.identity.domain.vo.UserId;
+import com.elatusdev.pokedex.identity.domain.vo.RefreshTokenId;
+import com.elatusdev.pokedex.identity.domain.vo.PasswordHash;
+import com.elatusdev.pokedex.identity.domain.vo.Email;
 
 class ValueObjectTest {
 

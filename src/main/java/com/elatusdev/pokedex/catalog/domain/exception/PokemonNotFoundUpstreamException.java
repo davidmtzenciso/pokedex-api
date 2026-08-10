@@ -1,4 +1,6 @@
 package com.elatusdev.pokedex.catalog.domain.exception;
+import com.elatusdev.pokedex.pokedex.domain.model.Pokemon;
+
 
 public class PokemonNotFoundUpstreamException extends RuntimeException {
 

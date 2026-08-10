@@ -3,6 +3,8 @@ package com.elatusdev.pokedex.identity.infrastructure.persistence;
 import com.elatusdev.pokedex.identity.infrastructure.persistence.model.UserDataModel;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import com.elatusdev.pokedex.identity.domain.vo.Username;
+import com.elatusdev.pokedex.identity.domain.vo.Email;
 
 // Username and Email normalise to lower case in their constructors, so the stored values are
 // already normalised and plain equality is the case-insensitive comparison.

@@ -1,6 +1,7 @@
 package com.elatusdev.pokedex.pokedex.domain.exception;
 
 import com.elatusdev.pokedex.shared.domain.vo.PokeApiId;
+import com.elatusdev.pokedex.pokedex.domain.model.Pokemon;
 
 public class DuplicatePokemonException extends RuntimeException {
 

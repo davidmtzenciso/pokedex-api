@@ -10,6 +10,11 @@ import com.tngtech.archunit.lang.SimpleConditionEvent;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
+import com.elatusdev.pokedex.pokedex.infrastructure.persistence.model.PokemonDataModel;
+import com.elatusdev.pokedex.pokedex.infrastructure.persistence.JpaPokemonRepositoryAdapter;
+import com.elatusdev.pokedex.pokedex.domain.port.PokemonRepository;
+import com.elatusdev.pokedex.pokedex.domain.model.Pokemon;
+import com.elatusdev.pokedex.catalog.domain.port.CatalogPage;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class NamingConventionArchitectureTest {

@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import com.elatusdev.pokedex.pokedex.domain.model.Pokemon;
+import com.elatusdev.pokedex.testsupport.PokemonFixture;
 
 // WU-US03-A's exit criterion says a page of 10 should issue "one" query. It cannot, and the
 // number it should issue is worth being precise about.

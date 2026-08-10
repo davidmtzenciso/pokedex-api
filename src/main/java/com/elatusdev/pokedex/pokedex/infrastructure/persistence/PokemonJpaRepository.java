@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import com.elatusdev.pokedex.shared.domain.vo.PokemonName;
 
 interface PokemonJpaRepository extends JpaRepository<PokemonDataModel, Long> {
 

@@ -11,6 +11,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
+import com.elatusdev.pokedex.pokedex.infrastructure.persistence.model.PokemonTypeDataModel;
+import com.elatusdev.pokedex.pokedex.infrastructure.persistence.model.PokemonTagDataModel;
+import com.elatusdev.pokedex.pokedex.infrastructure.persistence.model.PokemonStatDataModel;
+import com.elatusdev.pokedex.pokedex.infrastructure.persistence.model.PokemonDataModel;
+import com.elatusdev.pokedex.pokedex.infrastructure.persistence.model.PokemonAbilityDataModel;
+import com.elatusdev.pokedex.pokedex.infrastructure.persistence.model.LocalizedNameDataModel;
+import com.elatusdev.pokedex.pokedex.infrastructure.persistence.model.EvolutionLinkDataModel;
+import com.elatusdev.pokedex.identity.infrastructure.persistence.model.UserDataModel;
 
 // This context reaching a started state is itself the assertion: ddl-auto is validate, so
 // any column the mapping and the migration disagree about fails the refresh. The tests below

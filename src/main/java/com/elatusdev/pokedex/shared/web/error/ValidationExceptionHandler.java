@@ -7,6 +7,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import com.elatusdev.pokedex.catalog.web.error.CatalogExceptionHandler;
 
 // Request BODY validation only, and deliberately context-free: both types it claims belong
 // to shared or to Spring, so this advice depends on no context and BC3 holds.

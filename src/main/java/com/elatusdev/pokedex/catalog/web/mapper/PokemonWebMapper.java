@@ -15,6 +15,7 @@ import com.elatusdev.pokedex.web.dto.PokemonPageDTO;
 import com.elatusdev.pokedex.web.dto.PokemonSummaryDTO;
 import com.elatusdev.pokedex.web.dto.SpriteDTO;
 import org.springframework.stereotype.Component;
+import com.elatusdev.pokedex.shared.domain.vo.Mass;
 
 // The kilogram conversion happens in the Mass value object, never here — a second
 // divide-by-ten at a call site is how "Bulbasaur weighs 69 kg" gets shipped.

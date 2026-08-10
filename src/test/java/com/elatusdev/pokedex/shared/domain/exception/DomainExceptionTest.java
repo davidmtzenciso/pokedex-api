@@ -7,6 +7,15 @@ import com.elatusdev.pokedex.shared.domain.vo.PokeApiId;
 import com.elatusdev.pokedex.pokedex.domain.vo.PokemonId;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
+import com.elatusdev.pokedex.pokedex.domain.exception.PokemonNotFoundException;
+import com.elatusdev.pokedex.pokedex.domain.exception.IllegalStateTransitionException;
+import com.elatusdev.pokedex.pokedex.domain.exception.DuplicatePokemonException;
+import com.elatusdev.pokedex.catalog.domain.exception.PokemonNotFoundUpstreamException;
+import com.elatusdev.pokedex.identity.domain.exception.UserAlreadyExistsException;
+import com.elatusdev.pokedex.identity.domain.exception.TokenReuseDetectedException;
+import com.elatusdev.pokedex.pokedex.domain.model.Pokemon;
+import com.elatusdev.pokedex.catalog.domain.exception.UpstreamUnavailableException;
+import com.elatusdev.pokedex.catalog.domain.exception.UpstreamTimeoutException;
 
 // Each type exists because it maps to a distinct response code, and each carries its context
 // as an accessor rather than only inside the message — the handler needs the value, not prose.

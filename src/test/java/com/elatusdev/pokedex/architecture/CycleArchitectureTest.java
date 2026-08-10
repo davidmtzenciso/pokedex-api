@@ -5,6 +5,8 @@ import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.sli
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
+import com.elatusdev.pokedex.pokedex.domain.exception.IllegalStateTransitionException;
+import com.elatusdev.pokedex.pokedex.domain.model.ReplicationState;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class CycleArchitectureTest {

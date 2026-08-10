@@ -23,6 +23,7 @@ import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import com.elatusdev.pokedex.testsupport.PokeApiFixtures;
 
 // Every row of the upstream failure matrix has a defined outcome, and each one occurs in
 // production. Testing only the happy path here is the whole reason WU-US01-A calls this out.

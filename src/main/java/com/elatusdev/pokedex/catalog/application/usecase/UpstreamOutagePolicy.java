@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import com.elatusdev.pokedex.pokedex.domain.model.Pokemon;
 
 // One statement of the degradation rule, because both read paths need it and two copies
 // would drift. Only an OUTAGE falls back: an absent Pokemon is an answer, not a failure,

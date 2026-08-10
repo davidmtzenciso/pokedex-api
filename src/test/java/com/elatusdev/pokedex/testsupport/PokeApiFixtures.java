@@ -5,37 +5,41 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import tools.jackson.databind.json.JsonMapper;
+import com.elatusdev.pokedex.catalog.infrastructure.pokeapi.PokeApiSpeciesResponse;
+import com.elatusdev.pokedex.catalog.infrastructure.pokeapi.PokeApiPokemonResponse;
+import com.elatusdev.pokedex.catalog.infrastructure.pokeapi.PokeApiListResponse;
+import com.elatusdev.pokedex.catalog.infrastructure.pokeapi.PokeApiEvolutionChainResponse;
 
 // Real recorded PokeAPI payloads, trimmed to the fields the mapper reads. Trimmed rather
 // than synthesised: genera[0] and names[0] really are Japanese, and flavor_text really does
 // carry \n and \f — a hand-written fixture would quietly lose the traps under test.
-final class PokeApiFixtures {
+public final class PokeApiFixtures {
 
     private static final JsonMapper MAPPER = JsonMapper.builder().build();
 
     private PokeApiFixtures() {}
 
-    static PokeApiPokemonResponse pokemon1() {
+    public static PokeApiPokemonResponse pokemon1() {
         return read("pokemon-1.json", PokeApiPokemonResponse.class);
     }
 
-    static PokeApiSpeciesResponse species1() {
+    public static PokeApiSpeciesResponse species1() {
         return read("species-1.json", PokeApiSpeciesResponse.class);
     }
 
-    static PokeApiEvolutionChainResponse evolutionChain1() {
+    public static PokeApiEvolutionChainResponse evolutionChain1() {
         return read("evolution-chain-1.json", PokeApiEvolutionChainResponse.class);
     }
 
-    static PokeApiEvolutionChainResponse evolutionChain67() {
+    public static PokeApiEvolutionChainResponse evolutionChain67() {
         return read("evolution-chain-67.json", PokeApiEvolutionChainResponse.class);
     }
 
-    static PokeApiListResponse pokemonList() {
+    public static PokeApiListResponse pokemonList() {
         return read("pokemon-list.json", PokeApiListResponse.class);
     }
 
-    static String raw(String name) {
+    public static String raw(String name) {
         try (InputStream in = open(name)) {
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException failure) {

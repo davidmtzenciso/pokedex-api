@@ -28,20 +28,20 @@ import java.util.Optional;
 import java.util.Set;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-final class PokemonFixture {
+public final class PokemonFixture {
 
-    static final Instant SYNCED_AT = Instant.parse("2026-08-09T12:00:00Z");
+    public static final Instant SYNCED_AT = Instant.parse("2026-08-09T12:00:00Z");
 
     private PokemonFixture() {
     }
 
     // TRUNCATE rather than DELETE: it resets the identity sequences too, so a test that
     // asserts on an id is not a hostage to the order the class happened to run in.
-    static void clear(JdbcTemplate jdbc) {
+    public static void clear(JdbcTemplate jdbc) {
         jdbc.execute("TRUNCATE TABLE pokemon, users RESTART IDENTITY CASCADE");
     }
 
-    static ReplicatedFields bulbasaur() {
+    public static ReplicatedFields bulbasaur() {
         return new ReplicatedFields(
                 new PokemonName("bulbasaur"),
                 Optional.of(new Category("Seed Pokémon")),
@@ -62,7 +62,7 @@ final class PokemonFixture {
 
     // every replicated component differs from bulbasaur(), so a merge that quietly did
     // nothing cannot pass a test that compares against this
-    static ReplicatedFields changedUpstream() {
+    public static ReplicatedFields changedUpstream() {
         return new ReplicatedFields(
                 new PokemonName("bulbasaur-redux"),
                 Optional.of(new Category("Renamed Pokémon")),
@@ -78,17 +78,17 @@ final class PokemonFixture {
                 List.of(new LocalizedName("de", "Bisasam", NameSource.UPSTREAM)));
     }
 
-    static Pokemon synced(int pokeApiId, ReplicatedFields replicated) {
+    public static Pokemon synced(int pokeApiId, ReplicatedFields replicated) {
         Pokemon pokemon = Pokemon.pending(PokeApiId.of(pokeApiId), replicated);
         pokemon.transitionTo(ReplicationState.SYNCED, SYNCED_AT);
         return pokemon;
     }
 
-    static Pokemon syncedBulbasaur() {
+    public static Pokemon syncedBulbasaur() {
         return synced(1, bulbasaur());
     }
 
-    static Pokemon draft(String name) {
+    public static Pokemon draft(String name) {
         return Pokemon.draft(new ReplicatedFields(
                 new PokemonName(name),
                 Optional.empty(),
@@ -104,7 +104,7 @@ final class PokemonFixture {
                 List.of()));
     }
 
-    static User curator(String username) {
+    public static User curator(String username) {
         return User.register(
                 new Username(username),
                 new Email(username + "@example.com"),

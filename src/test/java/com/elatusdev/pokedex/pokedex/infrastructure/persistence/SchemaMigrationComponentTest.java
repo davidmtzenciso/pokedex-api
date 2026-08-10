@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import com.elatusdev.pokedex.identity.domain.model.User;
 
 // Flyway against a real Postgres 17, from empty. H2 would apply a migration that Postgres
 // rejects and a partial index it silently reinterprets, so this tier is the only place the

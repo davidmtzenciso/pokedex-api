@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
+import com.elatusdev.pokedex.shared.web.error.ProblemDetails;
 
 // The 401 side of the chain. The code carried here is the one the request earned:
 // UNAUTHENTICATED for a missing token, INVALID_TOKEN for one that failed verification, and

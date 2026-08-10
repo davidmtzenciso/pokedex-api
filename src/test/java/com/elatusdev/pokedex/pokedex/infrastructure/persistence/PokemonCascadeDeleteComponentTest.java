@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import com.elatusdev.pokedex.testsupport.PokemonFixture;
 
 // I9 / F10 — delete(p) ⟹ p ∉ Pokemon ∧ ∀c ∈ children(p): c ∉ Child.
 // Deletes are hard (ADR-0010): there is nothing to filter out afterwards, so an orphan left

@@ -16,7 +16,7 @@ class ProjectClassesArchitectureTest {
         JavaClasses imported = ProjectClasses.production();
 
         assertThat(imported.stream().map(JavaClass::getName))
-                .contains("com.elatusdev.pokedex.domain.model.ReplicationState")
+                .contains("com.elatusdev.pokedex.pokedex.domain.model.ReplicationState")
                 .contains("com.elatusdev.pokedex.PokedexApplication");
     }
 

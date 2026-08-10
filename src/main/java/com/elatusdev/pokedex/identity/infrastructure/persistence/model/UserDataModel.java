@@ -8,6 +8,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.elatusdev.pokedex.identity.domain.model.User;
+import com.elatusdev.pokedex.identity.domain.model.RefreshToken;
 
 // refresh_tokens is a table in V1 but not an association here: RefreshToken is WU-AUTH-A's
 // aggregate child, and a collection this class does not need would load on every login.

@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.stereotype.Component;
+import com.elatusdev.pokedex.identity.infrastructure.persistence.JpaUserRepositoryAdapter;
 
 // TEST SCOPE ONLY, and temporary. No work unit owns a RefreshTokenRepository adapter:
 // WU-US03-A delivered JpaUserRepositoryAdapter and a refresh_tokens table — with

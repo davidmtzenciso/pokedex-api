@@ -15,7 +15,7 @@ import org.springframework.http.ProblemDetail;
 // to keep the error contract identical on both sides of the chain.
 public final class ProblemDetails {
 
-    static final String TYPE_PREFIX = "https://pokedex.elatus-dev.com/problems/";
+    public static final String TYPE_PREFIX = "https://pokedex.elatus-dev.com/problems/";
 
     private ProblemDetails() {}
 
@@ -30,7 +30,7 @@ public final class ProblemDetails {
         return problem;
     }
 
-    static void write(
+    public static void write(
             HttpServletRequest request,
             HttpServletResponse response,
             HttpStatus status,
