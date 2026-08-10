@@ -50,7 +50,10 @@ class PokeApiCatalogAdapterComponentTest {
                 URI.create("http://localhost:" + upstream.port()),
                 Duration.ofSeconds(2),
                 Duration.ofSeconds(5),
-                0,
+                // one retry, not zero: a successful call still makes exactly one request, so
+                // the 1 + 2N count stays exact, but a transient local blip no longer fails
+                // the run outright
+                1,
                 Duration.ofMillis(1),
                 MAX_CONCURRENCY,
                 Duration.ofHours(24),

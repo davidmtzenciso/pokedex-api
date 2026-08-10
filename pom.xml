@@ -16,6 +16,9 @@
 
     <spring-boot.version>4.1.0</spring-boot.version>
     <springdoc.version>3.1.0</springdoc.version>
+    <!-- the Boot 4.1.0 BOM pins 12.4.0; an imported BOM does not read this property, so the
+         flyway artifacts below carry the version explicitly -->
+    <flyway.version>13.2.0</flyway.version>
     <jjwt.version>0.13.0</jjwt.version>
     <archunit.version>1.5.0</archunit.version>
     <wiremock.version>3.13.1</wiremock.version>
@@ -35,6 +38,19 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- first, and deliberately: the Boot BOM below pins flyway-core to 12.4.0, so without
+           this the postgres and cockroachdb modules drag 12.4.0 back in and dependencyConvergence
+           fails. The first matching entry wins, which is why this precedes the imports. -->
+      <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-core</artifactId>
+        <version>${flyway.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-database-postgresql</artifactId>
+        <version>${flyway.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
@@ -69,6 +85,31 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-redis</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+
+    <!-- Boot 4 split spring-boot-autoconfigure into per-technology modules. flyway-core alone
+         puts Flyway on the classpath and nothing runs it: no FlywayAutoConfiguration, no
+         schema history table, and a context that starts perfectly against an empty database. -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-flyway</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-database-postgresql</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>runtime</scope>
+    </dependency>
 
     <!-- generated *Api interfaces need these at compile time -->
     <dependency>
@@ -97,7 +138,17 @@
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-testcontainers</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
