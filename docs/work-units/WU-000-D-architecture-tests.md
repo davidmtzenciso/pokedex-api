@@ -50,7 +50,7 @@ Cache the imported classes in a static so 16 rules do not re-import 16 times.
 |---|---|
 | **Produces** | Shared importer |
 | **Verify** | `mvn -B test -Dtest='*ArchitectureTest'` |
-| **Pass when** | Imports classes from all four modules |
+| **Pass when** | Imports every compiled production class under `com.elatusdev.pokedex`; no test class and no generated class appears. (Three of the four layer packages are still empty at this point — "imports all four" only becomes observable at Phase 6, so it is not the criterion) |
 | **On fail / Rollback** | Ensure the importer points at `target/classes`, not `src` |
 
 ### I2 — Layer and purity rules (L1–L4)
