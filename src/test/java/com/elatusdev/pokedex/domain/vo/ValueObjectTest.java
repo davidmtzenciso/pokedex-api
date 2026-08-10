@@ -274,4 +274,35 @@ class ValueObjectTest {
             assertThatThrownBy(() -> new Category(" ")).isInstanceOf(InvalidPokemonDataException.class);
         }
     }
+
+    @Nested
+    class NotesTest {
+
+        @Test
+        void should_strip_and_carry_the_value() {
+            assertThat(new Notes("  needs a better sprite ").value()).isEqualTo("needs a better sprite");
+        }
+
+        @Test
+        void should_accept_notes_of_exactly_two_thousand_characters() {
+            assertThat(new Notes("n".repeat(2000)).value()).hasSize(2000);
+        }
+
+        @Test
+        void should_reject_notes_over_two_thousand_characters() {
+            assertThatThrownBy(() -> new Notes("n".repeat(2001)))
+                    .isInstanceOf(InvalidPokemonDataException.class)
+                    .hasMessageContaining("2000");
+        }
+
+        @Test
+        void should_reject_blank() {
+            assertThatThrownBy(() -> new Notes("  ")).isInstanceOf(InvalidPokemonDataException.class);
+        }
+
+        @Test
+        void should_reject_null() {
+            assertThatThrownBy(() -> new Notes(null)).isInstanceOf(NullPointerException.class);
+        }
+    }
 }
