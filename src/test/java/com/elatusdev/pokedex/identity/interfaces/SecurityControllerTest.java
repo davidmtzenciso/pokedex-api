@@ -1,4 +1,4 @@
-package com.elatusdev.pokedex.identity.infrastructure;
+package com.elatusdev.pokedex.identity.interfaces;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;

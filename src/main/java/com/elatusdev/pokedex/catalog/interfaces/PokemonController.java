@@ -1,4 +1,4 @@
-package com.elatusdev.pokedex.catalog.infrastructure;
+package com.elatusdev.pokedex.catalog.interfaces;
 
 import com.elatusdev.pokedex.catalog.application.GetPokemonDetailUseCase;
 import com.elatusdev.pokedex.catalog.application.ListPokemonUseCase;

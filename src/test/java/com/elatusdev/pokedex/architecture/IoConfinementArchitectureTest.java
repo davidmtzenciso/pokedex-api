@@ -25,9 +25,9 @@ class IoConfinementArchitectureTest {
     @Test
     void should_reject_persistence_api_dependencies_when_the_class_is_outside_infrastructure() {
         noClasses()
-                .that().resideOutsideOfPackage("..infrastructure..")
+                .that().resideOutsideOfPackages("..infrastructure..", "..interfaces..")
                 .should().dependOnClassesThat(PERSISTENCE_API)
-                .because("IO1 — database access lives behind a repository adapter, never in a use case or a controller")
+                .because("IO1 — database access lives behind a repository adapter in the interfaces ring, never in a use case")
                 .check(ProjectClasses.production());
     }
 

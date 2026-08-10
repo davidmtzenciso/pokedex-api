@@ -10,7 +10,7 @@ import java.util.Optional;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import com.elatusdev.pokedex.pokedex.infrastructure.JpaPokemonRepositoryAdapter;
+import com.elatusdev.pokedex.pokedex.interfaces.JpaPokemonRepositoryAdapter;
 import com.elatusdev.pokedex.catalog.application.ListPokemonUseCase;
 
 // TEMPORARY, AND SELF-REMOVING. The real adapter is WU-US03-A; until it exists the

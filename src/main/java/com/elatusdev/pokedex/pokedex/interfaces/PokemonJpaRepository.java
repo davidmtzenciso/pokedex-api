@@ -1,4 +1,4 @@
-package com.elatusdev.pokedex.pokedex.infrastructure;
+package com.elatusdev.pokedex.pokedex.interfaces;
 
 import java.util.List;
 import java.util.Optional;

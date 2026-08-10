@@ -115,17 +115,23 @@ See [ADR-0013](docs/adr/0013-bounded-context-packages.md).
 
 ## Where things live
 
-Every bounded context has exactly **three** directories and no sub-packages:
+Every bounded context has the **four Clean Architecture rings** and no sub-packages:
 
 ```
+{context}/domain          entities, value objects, ports, exceptions — depends on nothing
 {context}/application     use cases and their result records
-{context}/domain          models, value objects, ports, exceptions
-{context}/infrastructure  controllers, adapters, config, filters, JPA entities
+{context}/interfaces      adapters: controllers, exception advices, repository adapters,
+                          Spring Data interfaces, DataModels, persistence mappers
+{context}/infrastructure  frameworks and drivers: Spring config, properties, filters,
+                          and technology clients (JWT, Redis, BCrypt, PokeAPI)
 ```
 
-There is no `web` package. Controllers are inbound adapters and live in `infrastructure`
-beside the outbound ones. Generated contract types are emitted to `contract.api` and
-`contract.dto`, outside every context.
+`interfaces`, not `interface` — the latter is a Java keyword and will not compile as a
+package name. There is no `web` package: an HTTP controller is an inbound adapter and sits
+in `interfaces` beside the outbound ones. Generated contract types are emitted to
+`contract.api` and `contract.dto`, outside every context.
+
+Dependencies point inward only: `infrastructure` → `interfaces` → `application` → `domain`.
 
 
 Everything below is relative to `com.elatusdev.pokedex.{context}`, where `{context}` is one
@@ -140,7 +146,7 @@ of `catalog`, `pokedex`, `identity`, `shared`.
 | PokeAPI client | `catalog/infrastructure/pokeapi` | `IO2` |
 | Redis cache adapter | `catalog/infrastructure/cache` | `IO1` |
 | Token issuer, hasher, session store | `identity/infrastructure/security` | — |
-| Controllers implementing generated `*Api` | `{context}/infrastructure` | `N2`, `OA1` |
+| Controllers implementing generated `*Api` | `{context}/interfaces` | `N2`, `OA1` |
 | `@RestControllerAdvice` — **one per context** | `{context}/web/error` · context-free rows in `shared/web/error` | `BC3` |
 | `SecurityConfig`, filters, entry points | `identity/web/{config,security}` | `SB-PA4` |
 | The OpenAPI contract | `src/main/resources/openapi/pokedex-api.yaml` | `OA1` |
@@ -172,9 +178,9 @@ ending in `DTO`, `Dto`, `DataModel`, `Entity`, `Request`, or `Response`.
 | Suffix | Means | Must live in | Rule |
 |---|---|---|---|
 | `*UseCase` | One application operation | `{context}/application/usecase` | `N1` |
-| `*Controller` | HTTP entry point implementing a generated `*Api` | `{context}/infrastructure` | `N2`, `OA1` |
-| `*Repository` | A persistence **port** (interface) or its Spring Data interface | `{context}/domain` or `{context}/infrastructure` | `N3` |
-| `*DataModel` | A JPA entity | `{context}/infrastructure` | `N4` |
+| `*Controller` | HTTP entry point implementing a generated `*Api` | `{context}/interfaces` | `N2`, `OA1` |
+| `*Repository` | A persistence **port** (interface) or its Spring Data interface | `{context}/domain` or `{context}/interfaces` | `N3` |
+| `*DataModel` | A JPA entity | `{context}/interfaces` | `N4` |
 | `*Exception` | A domain failure mode, extending `RuntimeException` | `{context}/domain/exception` | `N5` |
 | `*DTO` | A wire type, generated from the contract | `web/dto` | `N6` |
 | `*Adapter` | An implementation of a port | `..infrastructure..` | `N9` |
