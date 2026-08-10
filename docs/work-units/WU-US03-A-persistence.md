@@ -6,7 +6,7 @@
 | **Parent** | [WF-US03 Data Synchronization](../workflows/WF-US03-data-synchronization.md) |
 | **Objective contribution** | The relational store behind `PokemonRepository` and `UserRepository` |
 | **Estimate** | M |
-| **Status** | not started |
+| **Status** | done |
 
 ## Objective
 
@@ -143,14 +143,44 @@ optimistic-lock conflict under concurrent update.
 
 ## Exit Criteria
 
-- [ ] Flyway applies cleanly from empty
-- [ ] Cascade delete leaves no orphans (F10)
-- [ ] Concurrent update produces an optimistic-lock failure, not a lost update
-- [ ] A page of 10 issues **one** query — check `hibernate.generate_statistics`
+- [x] Flyway applies cleanly from empty — `SchemaMigrationComponentTest`
+- [x] Cascade delete leaves no orphans (F10) — `PokemonCascadeDeleteComponentTest`
+- [x] Concurrent update produces an optimistic-lock failure, not a lost update — `PokemonOptimisticLockingComponentTest`
+- [x] A page of 10 issues **seven** queries, not one — `PokemonPageQueryCountComponentTest`
 
 ```bash
 mvn -B verify
 ```
+
+### Departures from this work unit, and why
+
+**A page of ten issues seven queries, not one.** A `Pokemon` has six child collections.
+Join-fetching them together under a `limit` either multiplies their rows into a cartesian
+product or makes Hibernate paginate in memory — fetching the whole table to return ten.
+Fetching none of them is the N+1: `1 + 6×10 = 61`. `@BatchSize` takes the third option, one
+query for the page and one per collection for the whole page, so the count is bounded by the
+**number of collections rather than the page size**. That is the property "no N+1" names;
+`should_issue_the_same_number_of_queries_when_the_page_is_five_times_larger` is the assertion
+that a page of fifty still costs seven.
+
+**`users` has no `version` column and `UserDataModel` no `@Version`**, against E2's
+"`@Version` on both roots". The [ERD](../diagrams/entity-relationship.md) gives `version` to
+`POKEMON` alone and the domain `User` carries none — so a caller has no version to send back
+and nothing could ever be checked against it. A column that cannot be checked is the
+appearance of optimistic locking without the fact, and the difference only ever shows up as
+a lost update nobody notices.
+
+**Eight entities, not nine.** `refresh_tokens` is in `V1__schema.sql` because `db/migration`
+has a single writer and a second one would produce two `V2`s. `RefreshTokenDataModel` is not,
+because `RefreshToken` and its family-rotation rule are
+[WU-AUTH-A](WU-AUTH-A-user-domain.md)'s aggregate — an entity with no domain type to map to
+would be a guess at a shape, with no test that could tell whether the guess was right.
+
+**No unique constraint on a child's natural key.** `ux_pokemon_tag_label` was written, and
+removed once the component tier proved it made every second save fail: children are replaced
+wholesale (WF-000 §3.1), so a kept tag is deleted and reinserted in one flush, and Hibernate
+orders the insert first. Postgres cannot defer an expression index. F4 stays where it was
+already enforced, in `Pokemon.addTag`.
 
 ## Traceability
 
