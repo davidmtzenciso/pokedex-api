@@ -158,8 +158,13 @@ without it.
 | Order | Work unit | Delivers | Entry |
 |---|---|---|---|
 | 1 | [WU-000-D](../work-units/WU-000-D-architecture-tests.md) | 16 ArchUnit rules, none frozen | WU-000-A |
-| 2 | [WU-000-C](../work-units/WU-000-C-domain-core.md) | Aggregates, state machine, merge policy, **ports** | WU-000-A, IAR re-confirmed |
+| 2 | [WU-000-C](../work-units/WU-000-C-domain-core.md) | Aggregates, state machine, **ports** | WU-000-A, IAR re-confirmed |
 | 3 | [WU-000-B](../work-units/WU-000-B-contract.md) | `pokedex-api.yaml`, generated `*Api` + `*DTO` | WU-000-A |
+
+> **The merge policy is not in this phase.** This table used to list it under WU-000-C,
+> which contradicts that work unit's own text — `PokemonMergePolicy` belongs to the story it
+> serves and is built in [WU-US03-B](../work-units/WU-US03-B-sync-use-cases.md). WU-000-C
+> stops at the aggregate the policy operates on.
 
 **WU-000-D goes first, not last.** It only depends on WU-000-A, and it is the sole
 enforcement of the dependency rule under a single module
@@ -182,12 +187,14 @@ mvn -B generate-sources && ls target/generated-sources/openapi/**/api/
 
 - [ ] All 16 ArchUnit rules pass. **Each was proven against a deliberate violation** before being trusted
 - [ ] `L2` turns red when a domain class imports Spring — demonstrated, then reverted
-- [ ] Every invariant I1–I11 has a passing named test
-- [ ] `PokemonMergePolicyTest` is a property test over generated field combinations
+- [ ] Every invariant **testable at the domain tier** has a passing named test — I1, I8, I9 and I11 name a `*ComponentTest` in [WF-000 §4.4](../workflows/WF-000-foundation.md) and need infrastructure later phases build
 - [ ] Domain line coverage ≥ 95%; **mutation score ≥ 85% on `domain`**, every survivor fixed or justified as equivalent
 - [ ] `PokemonApi`, `LocalPokemonApi`, `SyncApi`, `SecurityApi` generated; every DTO ends in `DTO`
 - [ ] No schema defined twice — every repeat is a `$ref`
 - [ ] No test uses `any()`; `git log --oneline` shows test commits preceding implementation commits
+
+`PokemonMergePolicyTest` is **not** a Phase 1 exit criterion — it is Phase 5's, with the
+policy it tests.
 
 ---
 

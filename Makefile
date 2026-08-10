@@ -35,9 +35,14 @@ contract-check: ## the spec is valid, and no breaking change slipped into an exi
 	  echo "contract-check: src/main/resources/openapi/pokedex-api.yaml does not exist yet (WU-000-B)"; exit 1; fi
 	@command -v openapi-spec-validator >/dev/null || { echo "install: pipx install openapi-spec-validator"; exit 1; }
 	openapi-spec-validator src/main/resources/openapi/pokedex-api.yaml
-	@command -v oasdiff >/dev/null || { echo "install oasdiff to gate breaking changes: https://github.com/oasdiff/oasdiff"; exit 1; }
+	@# oasdiff is required only when there is a tag to diff against. Demanding it before
+	@# the first release made contract-check fail on a spec that is provably fine, and the
+	@# check it gates could not have run anyway.
 	@PREV=$$(git tag --sort=-v:refname | head -1); \
-	 if [ -z "$$PREV" ]; then echo "contract-check: no previous tag; nothing to diff against"; else \
+	 if [ -z "$$PREV" ]; then \
+	   echo "contract-check: no previous tag; no existing operation to break yet"; else \
+	   command -v oasdiff >/dev/null || { \
+	     echo "oasdiff is required once a release exists: https://github.com/oasdiff/oasdiff"; exit 1; }; \
 	   git show $$PREV:src/main/resources/openapi/pokedex-api.yaml > /tmp/prev-spec.yaml && \
 	   oasdiff breaking /tmp/prev-spec.yaml src/main/resources/openapi/pokedex-api.yaml; fi
 

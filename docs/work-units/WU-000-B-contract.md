@@ -6,7 +6,7 @@
 | **Parent** | [WF-000 Foundation](../workflows/WF-000-foundation.md) |
 | **Objective contribution** | The OpenAPI document, and Java interfaces generated from it |
 | **Estimate** | M |
-| **Status** | not started |
+| **Status** | done |
 
 ## Objective
 
@@ -168,10 +168,10 @@ asserting byte-identity (AC1c).
 
 ## Exit Criteria
 
-- [ ] Spec valid OpenAPI 3.1; generated interfaces compile
-- [ ] Every error response `$ref`s the one `ProblemDetail` schema
-- [ ] `size` declares default 10 and maximum 100
-- [ ] Served document byte-identical to the authored one
+- [x] Spec valid OpenAPI 3.1; generated interfaces compile
+- [x] Every error response `$ref`s the one `ProblemDetail` schema
+- [x] `size` declares default 10 and maximum 100
+- [x] Served document byte-identical to the authored one — `OpenApiContractComponentTest`
 
 ```bash
 mvn -B verify && make contract-check
