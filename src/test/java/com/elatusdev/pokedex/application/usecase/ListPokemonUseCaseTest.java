@@ -33,7 +33,7 @@ class ListPokemonUseCaseTest {
 
     private final PokemonCatalog catalog = mock(PokemonCatalog.class);
     private final PokemonRepository repository = mock(PokemonRepository.class);
-    private final ListPokemonUseCase useCase = new ListPokemonUseCase(catalog, repository);
+    private final ListPokemonUseCase useCase = new ListPokemonUseCase(catalog, repository, new UpstreamOutagePolicy());
 
     private static Pokemon row(String name) {
         return Pokemon.pending(
