@@ -13,7 +13,7 @@ import com.elatusdev.pokedex.shared.domain.InvalidPokemonDataException;
 import com.elatusdev.pokedex.catalog.domain.PokemonNotFoundUpstreamException;
 import com.elatusdev.pokedex.catalog.domain.UpstreamUnavailableException;
 import com.elatusdev.pokedex.pokedex.domain.Pokemon;
-import com.elatusdev.pokedex.pokedex.domain.ReplicatedFields;
+import com.elatusdev.pokedex.shared.domain.ReplicatedFields;
 import com.elatusdev.pokedex.catalog.domain.PokemonCatalog;
 import com.elatusdev.pokedex.pokedex.domain.PokemonRepository;
 import com.elatusdev.pokedex.shared.domain.Category;

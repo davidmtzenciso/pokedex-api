@@ -10,6 +10,12 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import com.elatusdev.pokedex.shared.domain.PokemonType;
+import com.elatusdev.pokedex.shared.domain.PokemonStat;
+import com.elatusdev.pokedex.shared.domain.PokemonAbility;
+import com.elatusdev.pokedex.shared.domain.NameSource;
+import com.elatusdev.pokedex.shared.domain.LocalizedName;
+import com.elatusdev.pokedex.shared.domain.EvolutionLink;
 
 class PokemonChildTest {
 

@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.elatusdev.pokedex.shared.domain.InvalidPokemonDataException;
-import com.elatusdev.pokedex.pokedex.domain.NameSource;
+import com.elatusdev.pokedex.shared.domain.NameSource;
 import com.elatusdev.pokedex.pokedex.domain.Pokemon;
-import com.elatusdev.pokedex.pokedex.domain.PokemonAbility;
-import com.elatusdev.pokedex.pokedex.domain.PokemonType;
+import com.elatusdev.pokedex.shared.domain.PokemonAbility;
+import com.elatusdev.pokedex.shared.domain.PokemonType;
 import com.elatusdev.pokedex.pokedex.domain.ReplicationState;
 import com.elatusdev.pokedex.shared.domain.Category;
 import com.elatusdev.pokedex.shared.domain.PokeApiId;

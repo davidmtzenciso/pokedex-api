@@ -5,6 +5,8 @@ import com.elatusdev.pokedex.identity.domain.UserId;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import com.elatusdev.pokedex.shared.domain.NameSource;
+import com.elatusdev.pokedex.shared.domain.LocalizedName;
 
 // The Proprietary half of the partition in WF-000 §4.7. The curator is the authority for
 // every field here, so re-sync must leave all of them byte-identical (F7 / AC5). The two

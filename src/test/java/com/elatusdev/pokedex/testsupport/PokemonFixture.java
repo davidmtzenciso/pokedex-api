@@ -1,13 +1,13 @@
 package com.elatusdev.pokedex.testsupport;
 
-import com.elatusdev.pokedex.pokedex.domain.EvolutionLink;
-import com.elatusdev.pokedex.pokedex.domain.LocalizedName;
-import com.elatusdev.pokedex.pokedex.domain.NameSource;
+import com.elatusdev.pokedex.shared.domain.EvolutionLink;
+import com.elatusdev.pokedex.shared.domain.LocalizedName;
+import com.elatusdev.pokedex.shared.domain.NameSource;
 import com.elatusdev.pokedex.pokedex.domain.Pokemon;
-import com.elatusdev.pokedex.pokedex.domain.PokemonAbility;
-import com.elatusdev.pokedex.pokedex.domain.PokemonStat;
-import com.elatusdev.pokedex.pokedex.domain.PokemonType;
-import com.elatusdev.pokedex.pokedex.domain.ReplicatedFields;
+import com.elatusdev.pokedex.shared.domain.PokemonAbility;
+import com.elatusdev.pokedex.shared.domain.PokemonStat;
+import com.elatusdev.pokedex.shared.domain.PokemonType;
+import com.elatusdev.pokedex.shared.domain.ReplicatedFields;
 import com.elatusdev.pokedex.pokedex.domain.ReplicationState;
 import com.elatusdev.pokedex.identity.domain.Role;
 import com.elatusdev.pokedex.identity.domain.User;
