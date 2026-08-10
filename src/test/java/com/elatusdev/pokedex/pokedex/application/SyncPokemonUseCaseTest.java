@@ -10,8 +10,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import com.elatusdev.pokedex.catalog.domain.CatalogPokemon;
-import com.elatusdev.pokedex.catalog.domain.PokemonCatalog;
+import com.elatusdev.pokedex.pokedex.domain.UpstreamPokemon;
+import com.elatusdev.pokedex.pokedex.domain.UpstreamPokemonSource;
 import com.elatusdev.pokedex.pokedex.domain.DuplicatePokemonException;
 import com.elatusdev.pokedex.pokedex.domain.Pokemon;
 import com.elatusdev.pokedex.pokedex.domain.PokemonRepository;
@@ -22,10 +22,10 @@ import com.elatusdev.pokedex.shared.domain.Height;
 import com.elatusdev.pokedex.shared.domain.Mass;
 import com.elatusdev.pokedex.shared.domain.PokeApiId;
 import com.elatusdev.pokedex.shared.domain.PokemonName;
-import com.elatusdev.pokedex.catalog.domain.PokemonNotFoundUpstreamException;
+import com.elatusdev.pokedex.shared.domain.PokemonNotFoundUpstreamException;
 import com.elatusdev.pokedex.shared.domain.ReplicatedFields;
 import com.elatusdev.pokedex.shared.domain.Sprite;
-import com.elatusdev.pokedex.catalog.domain.UpstreamUnavailableException;
+import com.elatusdev.pokedex.shared.domain.UpstreamUnavailableException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -38,7 +38,7 @@ class SyncPokemonUseCaseTest {
 
     private static final Instant NOW = Instant.parse("2026-08-10T09:00:00Z");
 
-    private final PokemonCatalog catalog = mock(PokemonCatalog.class);
+    private final UpstreamPokemonSource catalog = mock(UpstreamPokemonSource.class);
     private final PokemonRepository repository = mock(PokemonRepository.class);
     private final ClockPort clock = mock(ClockPort.class);
     private final SyncPokemonUseCase useCase = new SyncPokemonUseCase(catalog, repository, clock);
@@ -59,8 +59,8 @@ class SyncPokemonUseCaseTest {
                 List.of());
     }
 
-    private static CatalogPokemon upstream() {
-        return CatalogPokemon.upstream(PokeApiId.of(1), bulbasaur());
+    private static UpstreamPokemon upstream() {
+        return new UpstreamPokemon(PokeApiId.of(1), bulbasaur());
     }
 
     @Test
@@ -137,10 +137,23 @@ class SyncPokemonUseCaseTest {
         verifyNoInteractions(repository);
     }
 
+    // the message matters: without it, bypassing the guard still throws the same type from
+    // PokemonName's constructor and the assertion cannot tell the two apart
     @Test
     void should_reject_a_blank_reference() {
         assertThatThrownBy(() -> useCase.sync("  "))
-                .isInstanceOf(com.elatusdev.pokedex.shared.domain.InvalidPokemonDataException.class);
+                .isInstanceOf(com.elatusdev.pokedex.shared.domain.InvalidPokemonDataException.class)
+                .hasMessageContaining("idOrName");
+
+        verifyNoInteractions(catalog);
+        verifyNoInteractions(repository);
+    }
+
+    @Test
+    void should_reject_a_null_reference() {
+        assertThatThrownBy(() -> useCase.sync(null))
+                .isInstanceOf(com.elatusdev.pokedex.shared.domain.InvalidPokemonDataException.class)
+                .hasMessageContaining("idOrName");
 
         verifyNoInteractions(catalog);
         verifyNoInteractions(repository);

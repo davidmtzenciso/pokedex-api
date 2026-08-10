@@ -8,7 +8,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.elatusdev.pokedex.catalog.domain.UpstreamUnavailableException;
+import com.elatusdev.pokedex.shared.domain.UpstreamUnavailableException;
 import com.elatusdev.pokedex.testsupport.InMemoryCachePort;
 import com.elatusdev.pokedex.catalog.domain.CatalogPage;
 import com.elatusdev.pokedex.shared.domain.PokeApiId;

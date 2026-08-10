@@ -1,7 +1,7 @@
 package com.elatusdev.pokedex.catalog.application;
 
-import com.elatusdev.pokedex.catalog.domain.UpstreamTimeoutException;
-import com.elatusdev.pokedex.catalog.domain.UpstreamUnavailableException;
+import com.elatusdev.pokedex.shared.domain.UpstreamTimeoutException;
+import com.elatusdev.pokedex.shared.domain.UpstreamUnavailableException;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.slf4j.Logger;

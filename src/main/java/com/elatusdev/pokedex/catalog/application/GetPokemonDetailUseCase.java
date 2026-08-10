@@ -1,7 +1,7 @@
 package com.elatusdev.pokedex.catalog.application;
 
 import com.elatusdev.pokedex.shared.domain.InvalidPokemonDataException;
-import com.elatusdev.pokedex.catalog.domain.PokemonNotFoundUpstreamException;
+import com.elatusdev.pokedex.shared.domain.PokemonNotFoundUpstreamException;
 import com.elatusdev.pokedex.catalog.domain.PokemonCatalog;
 import com.elatusdev.pokedex.shared.domain.PokeApiId;
 import com.elatusdev.pokedex.shared.domain.PokemonName;

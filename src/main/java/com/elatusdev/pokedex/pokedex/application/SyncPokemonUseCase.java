@@ -1,10 +1,10 @@
 package com.elatusdev.pokedex.pokedex.application;
 
-import com.elatusdev.pokedex.catalog.domain.CatalogPokemon;
-import com.elatusdev.pokedex.catalog.domain.PokemonCatalog;
-import com.elatusdev.pokedex.catalog.domain.PokemonNotFoundUpstreamException;
+import com.elatusdev.pokedex.shared.domain.PokemonNotFoundUpstreamException;
 import com.elatusdev.pokedex.pokedex.domain.DuplicatePokemonException;
 import com.elatusdev.pokedex.pokedex.domain.Pokemon;
+import com.elatusdev.pokedex.pokedex.domain.UpstreamPokemon;
+import com.elatusdev.pokedex.pokedex.domain.UpstreamPokemonSource;
 import com.elatusdev.pokedex.pokedex.domain.PokemonRepository;
 import com.elatusdev.pokedex.pokedex.domain.ReplicationState;
 import com.elatusdev.pokedex.shared.domain.ClockPort;
@@ -27,40 +27,36 @@ public class SyncPokemonUseCase {
 
     private static final Pattern NUMERIC = Pattern.compile("\\d++");
 
-    private final PokemonCatalog catalog;
+    private final UpstreamPokemonSource upstreamSource;
     private final PokemonRepository repository;
     private final ClockPort clock;
 
-    public SyncPokemonUseCase(PokemonCatalog catalog, PokemonRepository repository, ClockPort clock) {
-        this.catalog = catalog;
+    public SyncPokemonUseCase(UpstreamPokemonSource upstreamSource, PokemonRepository repository, ClockPort clock) {
+        this.upstreamSource = upstreamSource;
         this.repository = repository;
         this.clock = clock;
     }
 
     public Pokemon sync(String idOrName) {
         String reference = requireReference(idOrName);
-        CatalogPokemon upstream =
+        UpstreamPokemon upstream =
                 fetch(reference).orElseThrow(() -> new PokemonNotFoundUpstreamException(reference));
-        PokeApiId pokeApiId = upstream
-                .pokeApiId()
-                .orElseThrow(() -> new InvalidPokemonDataException(
-                        "the catalogue returned no upstream id for '" + reference + "'"));
-        requireNotAlreadyReplicated(pokeApiId);
-        return repository.save(replicate(pokeApiId, upstream, clock.now()));
+        requireNotAlreadyReplicated(upstream.pokeApiId());
+        return repository.save(replicate(upstream, clock.now()));
     }
 
     // PENDING is where a replication enters the lifecycle, and SYNCED is the one edge that
     // writes upstream data into a record that has no curator data yet
-    private static Pokemon replicate(PokeApiId pokeApiId, CatalogPokemon upstream, Instant now) {
-        Pokemon fresh = Pokemon.pending(pokeApiId, upstream.replicated());
+    private static Pokemon replicate(UpstreamPokemon upstream, Instant now) {
+        Pokemon fresh = Pokemon.pending(upstream.pokeApiId(), upstream.replicated());
         fresh.transitionTo(ReplicationState.SYNCED, now);
         return fresh;
     }
 
-    private Optional<CatalogPokemon> fetch(String reference) {
+    private Optional<UpstreamPokemon> fetch(String reference) {
         return NUMERIC.matcher(reference).matches()
-                ? catalog.fetchById(PokeApiId.of(Integer.parseInt(reference)))
-                : catalog.fetchByName(new PokemonName(reference));
+                ? upstreamSource.fetchById(PokeApiId.of(Integer.parseInt(reference)))
+                : upstreamSource.fetchByName(new PokemonName(reference));
     }
 
     private void requireNotAlreadyReplicated(PokeApiId pokeApiId) {

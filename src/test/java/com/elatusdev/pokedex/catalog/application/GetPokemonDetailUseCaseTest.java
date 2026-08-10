@@ -10,8 +10,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.elatusdev.pokedex.shared.domain.InvalidPokemonDataException;
-import com.elatusdev.pokedex.catalog.domain.PokemonNotFoundUpstreamException;
-import com.elatusdev.pokedex.catalog.domain.UpstreamUnavailableException;
+import com.elatusdev.pokedex.shared.domain.PokemonNotFoundUpstreamException;
+import com.elatusdev.pokedex.shared.domain.UpstreamUnavailableException;
 import com.elatusdev.pokedex.shared.domain.ReplicatedFields;
 import com.elatusdev.pokedex.catalog.domain.PokemonCatalog;
 import com.elatusdev.pokedex.shared.domain.Category;
@@ -133,6 +133,16 @@ class GetPokemonDetailUseCaseTest {
 
     // blank is malformed input, not "no such Pokemon" — the contract declares minLength 1,
     // so this is a 400 and never a 404
+    @Test
+    void should_reject_a_null_reference_as_invalid_rather_than_absent() {
+        assertThatThrownBy(() -> useCase.detail(null))
+                .isInstanceOf(InvalidPokemonDataException.class)
+                .hasMessageContaining("idOrName");
+
+        verifyNoInteractions(catalog);
+        verifyNoInteractions(repository);
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"", "   "})
     void should_reject_a_blank_reference_as_invalid_rather_than_absent(String reference) {

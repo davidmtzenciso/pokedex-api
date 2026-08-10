@@ -1,9 +1,9 @@
 package com.elatusdev.pokedex.catalog.interfaces;
 
 import com.elatusdev.pokedex.shared.domain.InvalidPaginationException;
-import com.elatusdev.pokedex.catalog.domain.PokemonNotFoundUpstreamException;
-import com.elatusdev.pokedex.catalog.domain.UpstreamTimeoutException;
-import com.elatusdev.pokedex.catalog.domain.UpstreamUnavailableException;
+import com.elatusdev.pokedex.shared.domain.PokemonNotFoundUpstreamException;
+import com.elatusdev.pokedex.shared.domain.UpstreamTimeoutException;
+import com.elatusdev.pokedex.shared.domain.UpstreamUnavailableException;
 import com.elatusdev.pokedex.contract.dto.FieldErrorDTO;
 import com.elatusdev.pokedex.contract.dto.ProblemDetailDTO;
 import jakarta.validation.ConstraintViolationException;

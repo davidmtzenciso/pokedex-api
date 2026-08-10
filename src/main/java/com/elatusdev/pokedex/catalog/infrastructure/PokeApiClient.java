@@ -1,7 +1,7 @@
 package com.elatusdev.pokedex.catalog.infrastructure;
 
-import com.elatusdev.pokedex.catalog.domain.UpstreamTimeoutException;
-import com.elatusdev.pokedex.catalog.domain.UpstreamUnavailableException;
+import com.elatusdev.pokedex.shared.domain.UpstreamTimeoutException;
+import com.elatusdev.pokedex.shared.domain.UpstreamUnavailableException;
 import java.net.SocketTimeoutException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;

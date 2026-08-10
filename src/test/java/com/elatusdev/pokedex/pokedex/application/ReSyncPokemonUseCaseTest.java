@@ -9,10 +9,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.elatusdev.pokedex.catalog.domain.CatalogPokemon;
-import com.elatusdev.pokedex.catalog.domain.PokemonCatalog;
-import com.elatusdev.pokedex.catalog.domain.PokemonNotFoundUpstreamException;
-import com.elatusdev.pokedex.catalog.domain.UpstreamUnavailableException;
+import com.elatusdev.pokedex.pokedex.domain.UpstreamPokemon;
+import com.elatusdev.pokedex.pokedex.domain.UpstreamPokemonSource;
+import com.elatusdev.pokedex.shared.domain.PokemonNotFoundUpstreamException;
+import com.elatusdev.pokedex.shared.domain.UpstreamUnavailableException;
 import com.elatusdev.pokedex.identity.domain.UserId;
 import com.elatusdev.pokedex.pokedex.domain.IllegalStateTransitionException;
 import com.elatusdev.pokedex.pokedex.domain.Notes;
@@ -48,7 +48,7 @@ class ReSyncPokemonUseCaseTest {
     private static final Instant SYNCED_AT = Instant.parse("2026-08-01T09:00:00Z");
     private static final Instant NOW = Instant.parse("2026-08-10T09:00:00Z");
 
-    private final PokemonCatalog catalog = mock(PokemonCatalog.class);
+    private final UpstreamPokemonSource catalog = mock(UpstreamPokemonSource.class);
     private final PokemonRepository repository = mock(PokemonRepository.class);
     private final ClockPort clock = mock(ClockPort.class);
     private final ReSyncPokemonUseCase useCase =
@@ -96,7 +96,7 @@ class ReSyncPokemonUseCaseTest {
 
     private void upstreamReturns(String name, int hectograms) {
         when(catalog.fetchById(PokeApiId.of(1)))
-                .thenReturn(Optional.of(CatalogPokemon.upstream(PokeApiId.of(1), replicated(name, hectograms))));
+                .thenReturn(Optional.of(new UpstreamPokemon(PokeApiId.of(1), replicated(name, hectograms))));
     }
 
     private void saveEchoes() {
@@ -190,6 +190,21 @@ class ReSyncPokemonUseCaseTest {
 
         verify(repository, times(1))
                 .save(argThat(pokemon -> pokemon.replicationState() == ReplicationState.FAILED));
+    }
+
+    // FAILED -> FAILED is not on the diagram, so a record that is already failed must be
+    // left alone rather than transitioned again; the outage is still what propagates
+    @Test
+    void should_not_transition_a_record_that_is_already_failed_when_upstream_is_unavailable() {
+        when(repository.findById(PokemonId.of(1)))
+                .thenReturn(Optional.of(record(ReplicationState.FAILED, ProprietaryFields.none())));
+        when(catalog.fetchById(PokeApiId.of(1))).thenThrow(new UpstreamUnavailableException("pokeapi down", null));
+
+        assertThatThrownBy(() -> useCase.reSync(PokemonId.of(1)))
+                .isInstanceOf(UpstreamUnavailableException.class);
+
+        verify(repository, times(1)).findById(PokemonId.of(1));
+        org.mockito.Mockito.verifyNoMoreInteractions(repository);
     }
 
     @Test

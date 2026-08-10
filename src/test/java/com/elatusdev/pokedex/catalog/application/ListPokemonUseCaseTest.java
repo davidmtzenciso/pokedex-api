@@ -10,7 +10,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.elatusdev.pokedex.shared.domain.InvalidPaginationException;
-import com.elatusdev.pokedex.catalog.domain.UpstreamUnavailableException;
+import com.elatusdev.pokedex.shared.domain.UpstreamUnavailableException;
 import com.elatusdev.pokedex.shared.domain.ReplicatedFields;
 import com.elatusdev.pokedex.catalog.domain.CatalogPage;
 import com.elatusdev.pokedex.catalog.domain.PokemonCatalog;
@@ -92,6 +92,14 @@ class ListPokemonUseCaseTest {
         assertThatThrownBy(() -> useCase.list(0, 101))
                 .isInstanceOf(InvalidPaginationException.class)
                 .hasMessageContaining("100");
+    }
+
+    // both boundaries, so "1..100" cannot drift to "2..100" or "1..99" unnoticed
+    @Test
+    void should_accept_the_minimum_size() {
+        when(catalog.fetchPage(0, 1)).thenReturn(new CatalogPage(List.of(row("bulbasaur")), 1351));
+
+        assertThat(useCase.list(0, 1).rows()).hasSize(1);
     }
 
     @Test

@@ -1,8 +1,8 @@
 package com.elatusdev.pokedex.catalog.infrastructure;
 
 import com.elatusdev.pokedex.shared.domain.InvalidPokemonDataException;
-import com.elatusdev.pokedex.catalog.domain.UpstreamTimeoutException;
-import com.elatusdev.pokedex.catalog.domain.UpstreamUnavailableException;
+import com.elatusdev.pokedex.shared.domain.UpstreamTimeoutException;
+import com.elatusdev.pokedex.shared.domain.UpstreamUnavailableException;
 import com.elatusdev.pokedex.shared.domain.EvolutionLink;
 import com.elatusdev.pokedex.shared.domain.CachePort;
 import com.elatusdev.pokedex.catalog.domain.CatalogPage;

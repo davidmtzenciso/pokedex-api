@@ -9,12 +9,12 @@ import org.junit.jupiter.api.Test;
 import com.elatusdev.pokedex.pokedex.domain.PokemonNotFoundException;
 import com.elatusdev.pokedex.pokedex.domain.IllegalStateTransitionException;
 import com.elatusdev.pokedex.pokedex.domain.DuplicatePokemonException;
-import com.elatusdev.pokedex.catalog.domain.PokemonNotFoundUpstreamException;
+import com.elatusdev.pokedex.shared.domain.PokemonNotFoundUpstreamException;
 import com.elatusdev.pokedex.identity.domain.UserAlreadyExistsException;
 import com.elatusdev.pokedex.identity.domain.TokenReuseDetectedException;
 import com.elatusdev.pokedex.pokedex.domain.Pokemon;
-import com.elatusdev.pokedex.catalog.domain.UpstreamUnavailableException;
-import com.elatusdev.pokedex.catalog.domain.UpstreamTimeoutException;
+import com.elatusdev.pokedex.shared.domain.UpstreamUnavailableException;
+import com.elatusdev.pokedex.shared.domain.UpstreamTimeoutException;
 
 // Each type exists because it maps to a distinct response code, and each carries its context
 // as an accessor rather than only inside the message — the handler needs the value, not prose.
@@ -101,5 +101,16 @@ class DomainExceptionTest {
         InvalidPokemonDataException thrown = new InvalidPokemonDataException("mass must be positive, was 0");
 
         assertThat(thrown).hasMessage("mass must be positive, was 0").hasNoCause();
+    }
+
+    // restores coverage lost when SharedExceptionTest was dropped in a refactor: the handler
+    // reports which page request was rejected, so the accessors are part of the contract
+    @Test
+    void should_carry_the_rejected_page_request_when_pagination_is_invalid() {
+        InvalidPaginationException thrown = new InvalidPaginationException("size must be 1..100", 2, 101);
+
+        assertThat(thrown.page()).isEqualTo(2);
+        assertThat(thrown.size()).isEqualTo(101);
+        assertThat(thrown).hasMessage("size must be 1..100");
     }
 }

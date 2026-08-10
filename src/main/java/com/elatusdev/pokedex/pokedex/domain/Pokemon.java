@@ -115,7 +115,14 @@ public final class Pokemon {
     // CUSTOMIZED} edge, driven by PokemonMergePolicy in WU-US03-B
     public void replaceReplicated(ReplicatedFields upstream, Instant at) {
         replicated = Objects.requireNonNull(upstream, "upstream");
-        transitionTo(proprietary.isEmpty() ? ReplicationState.SYNCED : ReplicationState.CUSTOMIZED, at);
+        // SYNCED first, always. A retry re-enters through PENDING, whose only legal successor
+        // is SYNCED, so a customised record has to land there and be re-customised — jumping
+        // straight to CUSTOMIZED would take an edge the diagram does not have. From STALE the
+        // end state is unchanged; it simply takes the two legal hops instead of one.
+        transitionTo(ReplicationState.SYNCED, at);
+        if (!proprietary.isEmpty()) {
+            transitionTo(ReplicationState.CUSTOMIZED, at);
+        }
     }
 
     public Optional<PokemonId> id() {

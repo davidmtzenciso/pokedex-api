@@ -68,15 +68,35 @@ class BoundedContextArchitectureTest {
 
     // BC5 — the catalogue read path must not know the curated aggregate. It reads
     // replicated data, and Pokemon carries region, notes, tags, replication state and a
-    // local id that an anonymous read has no business seeing. Exactly one adapter is
-    // allowed to bridge the two contexts, and it maps rather than forwards.
+    // local id that an anonymous read has no business seeing.
+    //
+    // Two adapters bridge the contexts, and BOTH point catalog -> pokedex. That direction is
+    // the rule, not an accident: replication needs upstream data, and had pokedex imported
+    // the catalogue to get it, the two contexts would point at each other and CY1 would go
+    // red. Each context declares what it needs as its own port and the bridge maps onto it.
+    //
+    //   PokedexLocalReplicaAdapter    satisfies catalog's LocalReplica from the aggregate
+    //   PokedexUpstreamSourceAdapter  satisfies pokedex's UpstreamPokemonSource from the catalogue
     @Test
-    void should_reach_pokedex_only_through_the_anti_corruption_adapter_when_the_class_is_in_catalog() {
+    void should_reach_pokedex_only_through_an_anti_corruption_adapter_when_the_class_is_in_catalog() {
         noClasses()
                 .that().resideInAPackage(CATALOG)
                 .and().haveSimpleNameNotEndingWith("PokedexLocalReplicaAdapter")
+                .and().haveSimpleNameNotEndingWith("PokedexUpstreamSourceAdapter")
                 .should().dependOnClassesThat().resideInAPackage("..pokedex.pokedex..")
-                .because("BC5 — one adapter bridges catalog and pokedex; everything else goes through the catalogue's own model")
+                .because("BC5 — two adapters bridge catalog and pokedex, both pointing catalog -> pokedex; everything else goes through its own model")
+                .check(ProjectClasses.production());
+    }
+
+    // BC6 — the other half of BC5, and the one that keeps the graph acyclic. pokedex states
+    // what it needs from upstream in its own vocabulary; the catalogue satisfies it. A single
+    // import of ..catalog.. from this context would restore the cycle BC5's direction avoids.
+    @Test
+    void should_never_depend_on_catalog_when_the_class_is_in_pokedex() {
+        noClasses()
+                .that().resideInAPackage(POKEDEX)
+                .should().dependOnClassesThat().resideInAPackage(CATALOG)
+                .because("BC6 — replication declares UpstreamPokemonSource and catalog implements it, so both bridges point one way")
                 .check(ProjectClasses.production());
     }
 }
