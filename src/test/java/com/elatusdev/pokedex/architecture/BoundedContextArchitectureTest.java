@@ -65,4 +65,18 @@ class BoundedContextArchitectureTest {
                 .allowEmptyShould(true)
                 .check(ProjectClasses.production());
     }
+
+    // BC5 — the catalogue read path must not know the curated aggregate. It reads
+    // replicated data, and Pokemon carries region, notes, tags, replication state and a
+    // local id that an anonymous read has no business seeing. Exactly one adapter is
+    // allowed to bridge the two contexts, and it maps rather than forwards.
+    @Test
+    void should_reach_pokedex_only_through_the_anti_corruption_adapter_when_the_class_is_in_catalog() {
+        noClasses()
+                .that().resideInAPackage(CATALOG)
+                .and().haveSimpleNameNotEndingWith("PokedexLocalReplicaAdapter")
+                .should().dependOnClassesThat().resideInAPackage("..pokedex.pokedex..")
+                .because("BC5 — one adapter bridges catalog and pokedex; everything else goes through the catalogue's own model")
+                .check(ProjectClasses.production());
+    }
 }

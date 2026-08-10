@@ -1,6 +1,5 @@
 package com.elatusdev.pokedex.catalog.domain;
 
-import com.elatusdev.pokedex.pokedex.domain.Pokemon;
 import com.elatusdev.pokedex.shared.domain.PokeApiId;
 import com.elatusdev.pokedex.shared.domain.PokemonName;
 import java.util.Optional;
@@ -11,7 +10,7 @@ public interface PokemonCatalog {
 
     CatalogPage fetchPage(int page, int size);
 
-    Optional<Pokemon> fetchById(PokeApiId pokeApiId);
+    Optional<CatalogPokemon> fetchById(PokeApiId pokeApiId);
 
-    Optional<Pokemon> fetchByName(PokemonName name);
+    Optional<CatalogPokemon> fetchByName(PokemonName name);
 }

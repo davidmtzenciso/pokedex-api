@@ -5,39 +5,46 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.elatusdev.pokedex.shared.domain.InvalidPokemonDataException;
 import com.elatusdev.pokedex.shared.domain.NameSource;
-import com.elatusdev.pokedex.pokedex.domain.Pokemon;
 import com.elatusdev.pokedex.shared.domain.PokemonAbility;
 import com.elatusdev.pokedex.shared.domain.PokemonType;
-import com.elatusdev.pokedex.pokedex.domain.ReplicationState;
 import com.elatusdev.pokedex.shared.domain.Category;
 import com.elatusdev.pokedex.shared.domain.PokeApiId;
 import com.elatusdev.pokedex.shared.domain.PokemonName;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import com.elatusdev.pokedex.testsupport.PokeApiFixtures;
+import com.elatusdev.pokedex.catalog.domain.CatalogPokemon;
 
 class PokeApiMapperTest {
 
     private final PokeApiMapper mapper = new PokeApiMapper();
 
-    private Pokemon bulbasaur() {
+    private CatalogPokemon bulbasaur() {
         return mapper.toPokemon(PokeApiFixtures.pokemon1(), PokeApiFixtures.species1(), List.of());
     }
 
     @Test
-    void should_map_the_upstream_id_and_name_into_a_pending_aggregate() {
-        Pokemon pokemon = bulbasaur();
+    void should_map_the_upstream_id_and_name_into_a_catalog_view() {
+        CatalogPokemon pokemon = bulbasaur();
 
         assertThat(pokemon.pokeApiId()).contains(PokeApiId.of(1));
         assertThat(pokemon.replicated().name()).isEqualTo(new PokemonName("bulbasaur"));
-        assertThat(pokemon.replicationState()).isEqualTo(ReplicationState.PENDING);
+    }
+
+    // the read path returns replicated data only. Replication state is curation state and
+    // belongs to the sync path, so there is deliberately nothing here to assert it against.
+    @Test
+    void should_expose_no_curation_state_on_a_catalog_view() {
+        assertThat(CatalogPokemon.class.getRecordComponents())
+                .extracting(java.lang.reflect.RecordComponent::getName)
+                .containsExactly("pokeApiId", "replicated");
     }
 
     // IA3 — upstream reports hectograms and decimetres. Getting this wrong makes Bulbasaur
     // weigh 69 kg, which is the canonical symptom in the gotchas table.
     @Test
     void should_convert_mass_and_height_from_upstream_units() {
-        Pokemon pokemon = bulbasaur();
+        CatalogPokemon pokemon = bulbasaur();
 
         assertThat(pokemon.replicated().mass().hectograms()).isEqualTo(69);
         assertThat(pokemon.replicated().mass().toKilograms()).isEqualByComparingTo("6.9");
@@ -49,7 +56,7 @@ class PokeApiMapperTest {
     // silently ships the wrong language rather than failing
     @Test
     void should_take_the_english_genus_as_the_category_and_never_the_first_entry() {
-        Pokemon pokemon = bulbasaur();
+        CatalogPokemon pokemon = bulbasaur();
 
         assertThat(PokeApiFixtures.species1().genera().get(0).language().name()).isEqualTo("ja-hrkt");
         assertThat(pokemon.replicated().category()).contains(new Category("Seed Pokémon"));
@@ -77,7 +84,7 @@ class PokeApiMapperTest {
         String raw = PokeApiFixtures.species1().flavorTextEntries().get(0).flavorText();
         assertThat(raw).contains("\n").contains("\f");
 
-        Pokemon pokemon = bulbasaur();
+        CatalogPokemon pokemon = bulbasaur();
 
         assertThat(pokemon.replicated().description())
                 .isPresent()
@@ -91,7 +98,7 @@ class PokeApiMapperTest {
     // IA6 — species.names[] already carries 12 locales, so the catalogue ships useful
     @Test
     void should_seed_every_localized_name_from_upstream_with_source_upstream() {
-        Pokemon pokemon = bulbasaur();
+        CatalogPokemon pokemon = bulbasaur();
 
         assertThat(pokemon.replicated().upstreamNames()).hasSize(12);
         assertThat(pokemon.replicated().upstreamNames())
@@ -104,7 +111,7 @@ class PokeApiMapperTest {
 
     @Test
     void should_map_abilities_with_their_slot_and_hidden_flag() {
-        Pokemon pokemon = bulbasaur();
+        CatalogPokemon pokemon = bulbasaur();
 
         assertThat(pokemon.replicated().abilities())
                 .contains(new PokemonAbility("overgrow", 1, false))
@@ -113,7 +120,7 @@ class PokeApiMapperTest {
 
     @Test
     void should_map_stats_with_their_base_value_and_effort() {
-        Pokemon pokemon = bulbasaur();
+        CatalogPokemon pokemon = bulbasaur();
 
         assertThat(pokemon.replicated().stats())
                 .filteredOn(stat -> "hp".equals(stat.name()))
@@ -135,7 +142,7 @@ class PokeApiMapperTest {
 
     @Test
     void should_map_types_with_their_slot() {
-        Pokemon pokemon = bulbasaur();
+        CatalogPokemon pokemon = bulbasaur();
 
         assertThat(pokemon.replicated().types())
                 .containsExactly(new PokemonType("grass", 1), new PokemonType("poison", 2));
@@ -143,7 +150,7 @@ class PokeApiMapperTest {
 
     @Test
     void should_prefer_the_official_artwork_for_the_sprite() {
-        Pokemon pokemon = bulbasaur();
+        CatalogPokemon pokemon = bulbasaur();
 
         assertThat(pokemon.replicated().sprite().preferred())
                 .map(java.net.URI::toString)
@@ -157,7 +164,7 @@ class PokeApiMapperTest {
 
     @Test
     void should_attach_the_evolution_links_it_is_given() {
-        Pokemon pokemon = mapper.toPokemon(
+        CatalogPokemon pokemon = mapper.toPokemon(
                 PokeApiFixtures.pokemon1(),
                 PokeApiFixtures.species1(),
                 new EvolutionChainMapper().flatten(PokeApiFixtures.evolutionChain1()));

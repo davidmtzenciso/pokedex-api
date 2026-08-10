@@ -2,7 +2,6 @@ package com.elatusdev.pokedex.catalog.interfaces;
 
 import com.elatusdev.pokedex.catalog.application.PokemonDetailResult;
 import com.elatusdev.pokedex.catalog.application.PokemonPageResult;
-import com.elatusdev.pokedex.pokedex.domain.Pokemon;
 import com.elatusdev.pokedex.contract.dto.AbilityDTO;
 import com.elatusdev.pokedex.contract.dto.EvolutionEdgeDTO;
 import com.elatusdev.pokedex.contract.dto.LocalizedNameDTO;
@@ -16,6 +15,7 @@ import com.elatusdev.pokedex.contract.dto.PokemonSummaryDTO;
 import com.elatusdev.pokedex.contract.dto.SpriteDTO;
 import org.springframework.stereotype.Component;
 import com.elatusdev.pokedex.shared.domain.Mass;
+import com.elatusdev.pokedex.catalog.domain.CatalogPokemon;
 
 // The kilogram conversion happens in the Mass value object, never here — a second
 // divide-by-ten at a call site is how "Bulbasaur weighs 69 kg" gets shipped.
@@ -28,7 +28,7 @@ public class PokemonWebMapper {
                 new PageMetadataDTO(result.page(), result.size(), result.totalElements(), result.totalPages()));
     }
 
-    public PokemonSummaryDTO toSummary(Pokemon pokemon, boolean stale) {
+    public PokemonSummaryDTO toSummary(CatalogPokemon pokemon, boolean stale) {
         return new PokemonSummaryDTO(
                         pokemon.pokeApiId().map(id -> id.value()).orElse(null),
                         pokemon.replicated().name().value(),
@@ -42,7 +42,7 @@ public class PokemonWebMapper {
     }
 
     public PokemonDetailDTO toDetail(PokemonDetailResult result) {
-        Pokemon pokemon = result.pokemon();
+        CatalogPokemon pokemon = result.pokemon();
         return new PokemonDetailDTO(
                         pokemon.pokeApiId().map(id -> id.value()).orElse(null),
                         pokemon.replicated().name().value(),
@@ -72,7 +72,7 @@ public class PokemonWebMapper {
                         .toList());
     }
 
-    private SpriteDTO toSprite(Pokemon pokemon) {
+    private SpriteDTO toSprite(CatalogPokemon pokemon) {
         SpriteDTO sprite = new SpriteDTO();
         pokemon.replicated().sprite().preferred().ifPresent(sprite::setOfficialArtwork);
         return sprite;
