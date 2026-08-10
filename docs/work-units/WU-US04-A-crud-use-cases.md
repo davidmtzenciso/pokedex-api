@@ -6,7 +6,7 @@
 | **Parent** | [WF-US04 Local Data Modification](../workflows/WF-US04-local-data-modification.md) |
 | **Objective contribution** | Create, read, update, and delete over the curated catalogue |
 | **Estimate** | M |
-| **Status** | not started |
+| **Status** | done |
 
 ## Objective
 
