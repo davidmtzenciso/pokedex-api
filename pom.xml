@@ -236,6 +236,12 @@
               <!-- default interface methods return 501 for operations a stream has not
                    implemented yet, which is what lets three streams share one contract.
                    They need ApiUtil, so that one supporting file is generated and no other. -->
+              <!-- the generator owns this directory, so it removes what it no longer emits.
+                   Without this, renaming apiPackage/modelPackage leaves the previous output
+                   behind: it is still a compile source root, so it still compiles, and the
+                   architecture suite imports classes no source produces. That is how a
+                   contract.dto rename produced 28 phantom N6 violations on a correct tree. -->
+              <cleanupOutput>true</cleanupOutput>
               <generateSupportingFiles>true</generateSupportingFiles>
               <supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
               <generateApiTests>false</generateApiTests>
