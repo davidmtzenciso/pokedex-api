@@ -254,6 +254,18 @@
         </executions>
       </plugin>
 
+      <!-- -parameters keeps the real parameter names in the bytecode. Without it Spring
+           reports a rejected query parameter as "arg1", which reaches the caller in the
+           errors[] of a 400 and tells them nothing about which field to fix. It is also
+           what lets a validation advice tell a pagination failure from any other one. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <parameters>true</parameters>
+        </configuration>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
