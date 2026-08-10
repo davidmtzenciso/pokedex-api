@@ -4,7 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.elatusdev.pokedex.domain.model.EvolutionLink;
 import com.elatusdev.pokedex.domain.vo.PokeApiId;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 class EvolutionChainMapperTest {
@@ -54,6 +60,31 @@ class EvolutionChainMapperTest {
 
         assertThat(links.get(0).trigger()).isEqualTo("level-up");
         assertThat(links.get(0).minLevel()).contains(16);
+    }
+
+    // F12 — the evolution graph is acyclic. Upstream ships a tree, so this asserts the
+    // flattening does not invent a back-edge: no species is reachable from itself.
+    @Test
+    void should_produce_an_acyclic_edge_list() {
+        assertAcyclic(mapper.flatten(PokeApiFixtures.evolutionChain67()));
+        assertAcyclic(mapper.flatten(PokeApiFixtures.evolutionChain1()));
+    }
+
+    private static void assertAcyclic(List<EvolutionLink> links) {
+        Map<Integer, List<Integer>> outgoing = links.stream()
+                .collect(Collectors.groupingBy(
+                        link -> link.from().value(), Collectors.mapping(link -> link.to().value(), Collectors.toList())));
+        for (Integer start : outgoing.keySet()) {
+            Deque<Integer> pending = new ArrayDeque<>(outgoing.get(start));
+            Set<Integer> reachable = new HashSet<>();
+            while (!pending.isEmpty()) {
+                Integer next = pending.pop();
+                assertThat(next).as("species %s is reachable from itself", start).isNotEqualTo(start);
+                if (reachable.add(next)) {
+                    pending.addAll(outgoing.getOrDefault(next, List.of()));
+                }
+            }
+        }
     }
 
     @Test

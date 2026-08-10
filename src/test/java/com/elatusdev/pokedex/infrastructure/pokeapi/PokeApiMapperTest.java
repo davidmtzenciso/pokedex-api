@@ -123,6 +123,15 @@ class PokeApiMapperTest {
                 });
     }
 
+    // A2 — all six stats, not just the ones the list row happens to show
+    @Test
+    void should_map_every_one_of_the_six_core_statistics() {
+        assertThat(bulbasaur().replicated().stats()).hasSize(6);
+        assertThat(bulbasaur().replicated().stats().stream().map(stat -> stat.name()))
+                .containsExactlyInAnyOrder(
+                        "hp", "attack", "defense", "special-attack", "special-defense", "speed");
+    }
+
     @Test
     void should_map_types_with_their_slot() {
         Pokemon pokemon = bulbasaur();
