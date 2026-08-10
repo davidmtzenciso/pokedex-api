@@ -5,6 +5,11 @@ server:
 spring:
   application:
     name: pokedex-api
+  data:
+    redis:
+      host: ${POKEDEX_REDIS_HOST:localhost}
+      port: ${POKEDEX_REDIS_PORT:6379}
+      timeout: PT2S
 
   datasource:
     url: ${POKEDEX_DB_URL:jdbc:postgresql://postgres:5432/pokedex}
@@ -26,6 +31,19 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+pokeapi:
+  base-url: ${POKEAPI_BASE_URL:https://pokeapi.co/api/v2}
+  connect-timeout: PT2S
+  # a page of N costs 1 + 2N upstream calls, so the read timeout bounds one call, not one page
+  read-timeout: PT5S
+  max-retries: 3
+  retry-backoff: PT0.2S
+  # in-flight calls. The page-size cap of 100 bounds how many a request can queue;
+  # this bounds how many are in flight. Both axes are needed.
+  max-concurrency: ${POKEAPI_MAX_CONCURRENCY:16}
+  cache-ttl: ${POKEAPI_CACHE_TTL:PT24H}
+  circuit-breaker-threshold: 5
 
 springdoc:
   # The contract is authored, not derived. Annotation scanning would build a second

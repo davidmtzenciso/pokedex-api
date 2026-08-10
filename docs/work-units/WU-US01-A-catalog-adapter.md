@@ -24,7 +24,7 @@ a hostile payload shape, and a resilience story for every failure mode.
 |---|---|---|
 | Upstream quirks IA1–IA6 | [WF-000 §3.0](../workflows/WF-000-foundation.md) | F2 |
 | Fan-out design | [concurrency](../handbook/concurrency.md) | F3 |
-| Resilience policy | [WF-000 §5.5](../workflows/WF-000-foundation.md) | F1 |
+| Resilience policy | [concurrency](../handbook/concurrency.md) — timeouts, retry and the circuit breaker are specified there, not in WF-000 | F1 |
 
 ## Outputs
 
