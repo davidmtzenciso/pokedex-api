@@ -6,8 +6,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.elatusdev.pokedex.web.dto.PokemonPageDTO;
-import com.elatusdev.pokedex.web.dto.ProblemDetailDTO;
+import com.elatusdev.pokedex.contract.dto.PokemonPageDTO;
+import com.elatusdev.pokedex.contract.dto.ProblemDetailDTO;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import java.io.IOException;

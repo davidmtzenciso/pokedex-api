@@ -1,6 +1,6 @@
 package com.elatusdev.pokedex.testsupport;
 
-import com.elatusdev.pokedex.shared.port.CachePort;
+import com.elatusdev.pokedex.shared.domain.CachePort;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;

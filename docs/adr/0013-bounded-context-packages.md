@@ -79,7 +79,7 @@ deciding where the interface lives.
 | Example | `PokemonRepository`, `PokemonCatalog`, `TokenIssuer`, `PasswordHasher` | `CachePort`, `ClockPort` |
 | Signature | Names domain types — `Optional<Pokemon> findById(PokemonId)` | Names none — `Instant now()`, `<T> Optional<T> get(String, Class<T>)` |
 | Expresses | A domain capability, in the ubiquitous language | A technical capability, in Java primitives |
-| Lives in | `{context}/domain/port` | `shared/port` — **outside `domain`** |
+| Lives in | `{context}/domain` | `shared/domain` |
 
 A domain port must be inside `domain`: dependency inversion requires the *inner* layer to own
 the interface, and moving `PokemonRepository` outward turns the arrow around and takes Clean
@@ -186,3 +186,31 @@ and now slices by context.
 [package dependencies](../diagrams/package-dependencies.md) ·
 [archunit governance](../guides/archunit-governance.md) ·
 [WU-000-D](../work-units/WU-000-D-architecture-tests.md)
+
+
+## Amendment — flat contexts, no `web`
+
+Each context has exactly three directories: `application`, `domain`, `infrastructure`. The
+sub-packages that layering produced (`domain/vo`, `domain/port`, `domain/model`,
+`domain/exception`, `application/usecase`, `application/result`,
+`infrastructure/persistence/model`, …) are gone: 119 files were spread across 55
+directories, which is more navigation than the code justifies.
+
+`web` is gone with them. A controller is an inbound adapter and belongs beside the
+outbound ones in `infrastructure`; keeping it in its own top-level layer implied the two
+were different kinds of thing. Generated contract types moved from `web.api` / `web.dto`
+to `contract.api` / `contract.dto`, outside every context, so no `web` package remains
+anywhere.
+
+Rules re-pointed rather than dropped: N1 (`..application..`), N2 (`..infrastructure..`),
+N3, N4, N5, N6 (`..contract.dto..`), N9, IO2, L1 and L5 all still hold, one segment
+shallower. Two needed more than a rename:
+
+- **N9** matched a port by the literal `.port` in its package name. It now requires the
+  implemented interface to sit in a project `domain` package.
+- **IMF1** scoped immutability to `..domain.vo..`, which no longer exists. It now applies
+  to every non-enum, non-interface domain class *without an identity field* — the
+  distinction the rule's own rationale draws, since identity is what a value object is
+  defined as not having. That exposed `Pokemon` as a mutable aggregate (`addTag` reassigns
+  fields); it is skipped because it has identity, not because it was allowlisted, and
+  whether it should be immutable is a design question for the sync work units.

@@ -5,10 +5,10 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import tools.jackson.databind.json.JsonMapper;
-import com.elatusdev.pokedex.catalog.infrastructure.pokeapi.PokeApiSpeciesResponse;
-import com.elatusdev.pokedex.catalog.infrastructure.pokeapi.PokeApiPokemonResponse;
-import com.elatusdev.pokedex.catalog.infrastructure.pokeapi.PokeApiListResponse;
-import com.elatusdev.pokedex.catalog.infrastructure.pokeapi.PokeApiEvolutionChainResponse;
+import com.elatusdev.pokedex.catalog.infrastructure.PokeApiSpeciesResponse;
+import com.elatusdev.pokedex.catalog.infrastructure.PokeApiPokemonResponse;
+import com.elatusdev.pokedex.catalog.infrastructure.PokeApiListResponse;
+import com.elatusdev.pokedex.catalog.infrastructure.PokeApiEvolutionChainResponse;
 
 // Real recorded PokeAPI payloads, trimmed to the fields the mapper reads. Trimmed rather
 // than synthesised: genera[0] and names[0] really are Japanese, and flavor_text really does

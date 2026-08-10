@@ -1,15 +1,15 @@
 package com.elatusdev.pokedex.testsupport;
 
-import com.elatusdev.pokedex.identity.domain.model.RefreshToken;
-import com.elatusdev.pokedex.identity.domain.port.RefreshTokenRepository;
-import com.elatusdev.pokedex.identity.domain.vo.RefreshTokenId;
+import com.elatusdev.pokedex.identity.domain.RefreshToken;
+import com.elatusdev.pokedex.identity.domain.RefreshTokenRepository;
+import com.elatusdev.pokedex.identity.domain.RefreshTokenId;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.stereotype.Component;
-import com.elatusdev.pokedex.identity.infrastructure.persistence.JpaUserRepositoryAdapter;
+import com.elatusdev.pokedex.identity.infrastructure.JpaUserRepositoryAdapter;
 
 // TEST SCOPE ONLY, and temporary. No work unit owns a RefreshTokenRepository adapter:
 // WU-US03-A delivered JpaUserRepositoryAdapter and a refresh_tokens table — with
