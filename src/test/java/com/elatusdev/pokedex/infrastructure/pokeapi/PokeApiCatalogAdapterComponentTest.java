@@ -96,6 +96,7 @@ class PokeApiCatalogAdapterComponentTest {
     @Test
     void should_never_exceed_the_configured_concurrency() {
         stubCatalogue();
+        probe.arm();
 
         adapter.fetchPage(0, 10);
 
@@ -179,9 +180,16 @@ class PokeApiCatalogAdapterComponentTest {
         private final AtomicInteger inFlight = new AtomicInteger();
         private final AtomicInteger peak = new AtomicInteger();
 
+        private volatile boolean armed;
+
+        void arm() {
+            armed = true;
+        }
+
         @Override
         public Response transform(Request request, Response response, FileSource files, Parameters parameters) {
-            if (request.getUrl().startsWith("/pokemon?")) {
+            // only the concurrency test pays the latch; the rest would just wait it out
+            if (!armed || request.getUrl().startsWith("/pokemon?")) {
                 return response;
             }
             int now = inFlight.incrementAndGet();
