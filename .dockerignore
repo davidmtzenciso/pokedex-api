@@ -1,0 +1,12 @@
+# keys/ first, because it is the one that matters: a build context containing the dev
+# keystore puts the signing key in the image, and every image built from it shares one key.
+keys/
+
+target/
+.git/
+.github/
+.idea/
+*.log
+.DS_Store
+docs/
+e2e/

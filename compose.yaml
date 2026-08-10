@@ -1,14 +1,8 @@
-# The backing services, per WF-000 §8.
+# Postgres, Redis and the API, per WF-000 §8. No web service: this repository ships no
+# client (ADR-0009).
 #
-# There is deliberately no `api` service yet. That one needs a Dockerfile, and the Dockerfile
-# is WU-999-A's — adding a half-considered one here would make `make up` look finished while
-# skipping hadolint, the non-root user, and the readiness healthcheck that work unit exists
-# to get right. `make up` already runs `docker compose up --build`, so the api service drops
-# in later with no change to the command anyone types.
-#
-# Ports are published to the host on purpose: until there is an api image, the way you run
-# the application is from your IDE or `mvn spring-boot:run`, and that reaches Postgres over
-# localhost rather than over the compose network. See the note in README on POKEDEX_DB_URL.
+# Ports on the datastores stay published so the application can still be run from an IDE or
+# `mvn spring-boot:run` against the same containers.
 
 services:
   postgres:
@@ -44,6 +38,34 @@ services:
       retries: 10
     volumes:
       - redisdata:/data
+
+  api:
+    build:
+      context: .
+    depends_on:
+      # `condition` matters: a bare depends_on waits for the container to START, not to be
+      # USABLE, and Flyway then races an initialising Postgres
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      POKEDEX_DB_URL: jdbc:postgresql://postgres:5432/pokedex
+      POKEDEX_DB_USER: pokedex
+      POKEDEX_DB_PASSWORD: ${POSTGRES_PASSWORD:-pokedex-dev-only}
+      POKEDEX_REDIS_HOST: redis
+      # dev-only, and the keystore it opens is generated fresh inside the container on every
+      # start. Production mounts a real keystore and supplies this from a secret store.
+      JWT_KEYSTORE_PASSWORD: ${JWT_KEYSTORE_PASSWORD:-changeit-dev-only}
+      JWT_KEYSTORE_PATH: file:/app/keys/pokedex-dev.p12
+    ports:
+      - "8080:8080"
+    deploy:
+      resources:
+        limits:
+          # without a limit MaxRAMPercentage=75 is 75% of the HOST, which on a developer
+          # laptop is several gigabytes of heap for a demo
+          memory: 1g
 
 volumes:
   pgdata:
