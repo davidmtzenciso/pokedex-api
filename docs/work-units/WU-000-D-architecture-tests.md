@@ -102,7 +102,7 @@ no `*Service` inside `usecase` · `EntityManager`/`JdbcTemplate`/`JpaRepository`
 | Field | Value |
 |---|---|
 | **Type** | create |
-| **Target** | `ImmutabilityArchitectureTest.java`, `ConstructionArchitectureTest.java`, `SecurityConfigArchitectureTest.java`, `OpenApiContractConfinementTest.java` |
+| **Target** | `ImmutabilityArchitectureTest.java`, `ConstructionArchitectureTest.java`, `SecurityConfigArchitectureTest.java`, `OpenApiContractConfinementArchitectureTest.java` |
 | **Intent** | The four rules most likely to be violated under deadline |
 | **Depends on** | I1 |
 

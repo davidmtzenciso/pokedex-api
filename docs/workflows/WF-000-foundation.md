@@ -445,7 +445,7 @@ Secrets never live in `*.properties` (`java:S6437`, `docker:S6472`). The dev key
 | **IMF1** — Immutability | Every class in `..domain.vo..` is a `record` or has only final fields | Yes | `ImmutabilityArchitectureTest` |
 | **CI1** — Constructor injection | No field `@Autowired`, no field `@Value`, no setter injection | Yes | `ConstructionArchitectureTest` |
 | **SB-PA4** — Filter-chain fallthrough | Every `@Bean SecurityFilterChain` terminates with `.anyRequest()` | Yes | `SecurityConfigArchitectureTest` |
-| **OA1** — Contract confinement | Every `@RestController` implements a generated `*Api` interface | Yes | `OpenApiContractConfinementTest` |
+| **OA1** — Contract confinement | Every `@RestController` implements a generated `*Api` interface | Yes | `OpenApiContractConfinementArchitectureTest` |
 | **CY1** — No cycles | No package cycles anywhere in `com.elatusdev.pokedex` | Yes | `CycleArchitectureTest` |
 
 `FreezingArchRule` is forbidden — rules ship enforced or not at all.
