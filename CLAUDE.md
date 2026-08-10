@@ -85,6 +85,32 @@ dependency. Define a port and implement it in `infrastructure`.
 
 ---
 
+## The second rule
+
+**The top of the package tree is the bounded context, not the layer.**
+
+```
+com.elatusdev.pokedex.{catalog|pokedex|identity|shared}.{domain|application|infrastructure|web}
+```
+
+| Context | Holds | Never holds |
+|---|---|---|
+| `catalog` | Reading PokeAPI — fan-out, resilience, cache | A local store, or any notion of a curator |
+| `pokedex` | The `Pokemon` aggregate, replication state, merge policy, proprietary fields | Anything about who is logged in, beyond a `UserId` |
+| `identity` | `User`, `RefreshToken`, hashing, token issuance, sessions | Anything about Pokémon |
+| `shared` | Replicated VOs, `CachePort`, `ClockPort` — what two contexts speak natively | **Anything that depends on a context** |
+
+Before adding a class, decide which context it is *about*, then which layer it *is*. Getting
+the second right and the first wrong still fails the build.
+
+- **`shared` depends on nothing** (`BC3`). If the thing you want to put there needs a context, it is not shared — it belongs in that context.
+- **Contexts meet through `domain` or not at all** (`BC4`). Never import another context's use case, adapter, or controller.
+- **Identifiers cross; models do not.** `pokedex` may hold a `UserId`. It may not hold a `User`.
+
+See [ADR-0013](docs/adr/0013-bounded-context-packages.md).
+
+---
+
 ## Where things live
 
 | Thing | Path | Enforced by |

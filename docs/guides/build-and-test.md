@@ -47,7 +47,7 @@ mvn -B generate-sources                    # after any spec edit
 | Unit | `*Test.java` | Surefire | no | Value objects, policies, use cases against mocked ports |
 | Upstream contract | WireMock-backed | Surefire | no | The PokeAPI adapter against recorded shapes, including 500s and timeouts |
 | Component | `*ComponentTest.java` | Failsafe + Testcontainers | **yes** | Full Spring context against a real Postgres and Redis |
-| Architecture | `*ArchitectureTest.java` | Surefire | no | The 16 structural rules |
+| Architecture | `*ArchitectureTest.java` | Surefire | no | The 22 structural rules |
 | Published contract | `make contract-check` | `openapi-spec-validator` + `oasdiff` | no | The spec is valid, and no breaking change slipped into an existing operation |
 | API E2E | Newman collection | `make e2e` | yes | Every endpoint against the running stack with seeded data |
 | Mutation | PIT | `make mutation` | no | That the tests would **notice** if the code were wrong |

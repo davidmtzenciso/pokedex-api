@@ -1,4 +1,4 @@
-package com.elatusdev.pokedex.domain.model;
+package com.elatusdev.pokedex.identity.domain.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

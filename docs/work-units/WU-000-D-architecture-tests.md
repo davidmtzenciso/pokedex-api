@@ -4,7 +4,7 @@
 |---|---|
 | **Work Unit** | WU-000-D |
 | **Parent** | [WF-000 Foundation](../workflows/WF-000-foundation.md) |
-| **Objective contribution** | The 16 structural rules the POM cannot express |
+| **Objective contribution** | The 22 structural rules the compiler cannot express |
 | **Estimate** | S |
 | **Status** | done |
 
@@ -27,7 +27,7 @@ failure rather than a review comment.
 
 ## Outputs
 
-- `architecture` test package with 16 passing rules, none frozen
+- `architecture` test package with 22 passing rules, none frozen
 
 ---
 
@@ -44,13 +44,13 @@ failure rather than a review comment.
 
 **How**
 `ClassFileImporter` walking `target/classes`, excluding generated sources and tests.
-Cache the imported classes in a static so 16 rules do not re-import 16 times.
+Cache the imported classes in a static so 22 rules do not re-import 22 times.
 
 | Field | Value |
 |---|---|
 | **Produces** | Shared importer |
 | **Verify** | `mvn -B test -Dtest='*ArchitectureTest'` |
-| **Pass when** | Imports every compiled production class under `com.elatusdev.pokedex`; no test class and no generated class appears. (Three of the four layer packages are still empty at this point — "imports all four" only becomes observable at Phase 6, so it is not the criterion) |
+| **Pass when** | Imports every compiled production class under `com.elatusdev.pokedex`; no test class and no generated class appears. (the `application`, `infrastructure` and `web` layers are still empty in most contexts at this point, so "imports every layer" only becomes observable later and is not the criterion) |
 | **On fail / Rollback** | Ensure the importer points at `target/classes`, not `src` |
 
 ### I2 — Layer and purity rules (L1–L4)
@@ -160,7 +160,7 @@ failure.
 
 ## Exit Criteria
 
-- [x] All 16 rules pass — 23 assertions across 9 `*ArchitectureTest` classes
+- [x] All 22 rules pass — BC1–BC4 and CY2 added with the bounded-context restructure (ADR-0013)
 - [x] **No `FreezingArchRule`, no allowlists, no `@ArchIgnore`**
 - [x] Each rule demonstrated to fail on a deliberate violation, then reverted
 

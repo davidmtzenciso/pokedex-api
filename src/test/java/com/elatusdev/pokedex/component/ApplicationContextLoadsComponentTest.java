@@ -2,7 +2,7 @@ package com.elatusdev.pokedex.component;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.elatusdev.pokedex.web.config.OpenApiContractConfig;
+import com.elatusdev.pokedex.shared.web.config.OpenApiContractConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

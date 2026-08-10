@@ -38,6 +38,8 @@ Recorded as ADRs rather than restated here:
 | The contract is a versioned, published artifact | [ADR-0008](../adr/0008-openapi-contract-distribution.md) |
 | The service ships no client | [ADR-0009](../adr/0009-no-bundled-client.md) |
 | Deletes are hard | [ADR-0010](../adr/0010-hard-deletes.md) |
+| Flyway owns the schema; `ddl-auto` is `validate` | [ADR-0012](../adr/0012-flyway-versioned-migrations.md) |
+| Packages by bounded context, layers inside them | [ADR-0013](../adr/0013-bounded-context-packages.md) |
 
 ---
 
@@ -384,10 +386,10 @@ pokedex-api/
 ├── pom.xml                                   ← one module, no parent
 └── src/
     ├── main/java/com/elatusdev/pokedex/
-    │   ├── domain/          model · vo · policy · exception · port   ← depends on nothing
-    │   ├── application/     usecase · command · result
-    │   ├── infrastructure/  persistence · pokeapi · cache · security
-    │   ├── web/             controller · error · config
+    │   ├── catalog/         ┐
+    │   ├── pokedex/          ├ bounded contexts, each carrying the four layers:
+    │   ├── identity/         ┘ domain · application · infrastructure · web
+    │   ├── shared/           ← the kernel: replicated VOs, CachePort, ClockPort
     │   └── PokedexApplication.java
     ├── main/resources/
     │   ├── openapi/pokedex-api.yaml          ← the contract, authored by hand
@@ -531,7 +533,16 @@ Secrets never live in `*.properties` (`java:S6437`, `docker:S6472`). The dev key
 | **CI1** — Constructor injection | No field `@Autowired`, no field `@Value`, no setter injection | Yes | `ConstructionArchitectureTest` |
 | **SB-PA4** — Filter-chain fallthrough | Every `@Bean SecurityFilterChain` terminates with `.anyRequest()` | Yes | `SecurityConfigArchitectureTest` |
 | **OA1** — Contract confinement | Every `@RestController` implements a generated `*Api` interface | Yes | `OpenApiContractConfinementArchitectureTest` |
-| **CY1** — No cycles | No package cycles anywhere in `com.elatusdev.pokedex` | Yes | `CycleArchitectureTest` |
+| **BC1** — Identity isolation | `identity` depends on neither `catalog` nor `pokedex` | Yes | `BoundedContextArchitectureTest` |
+| **BC2** — Catalogue isolation | `catalog` does not depend on `identity` | Yes | `BoundedContextArchitectureTest` |
+| **BC3** — Kernel purity | `shared` depends on **no** context at all | Yes | `BoundedContextArchitectureTest` |
+| **BC4** — Context coupling | A context reaches another only through its `domain`, never its `application`, `infrastructure`, or `web` | Yes | `BoundedContextArchitectureTest` |
+| **CY1** — No context cycles | No cycles between `catalog`, `pokedex`, `identity`, `shared` | Yes | `CycleArchitectureTest` |
+| **CY2** — No layer cycles | No cycles between layers within a context | Yes | `CycleArchitectureTest` |
+
+`L1`–`L4`, `N1`–`N5`, `IO1`–`IO2` are written against **relative** package patterns
+(`..domain..`, `..application..`), so each matches inside every context without change —
+[ADR-0013](../adr/0013-bounded-context-packages.md).
 
 `FreezingArchRule` is forbidden — rules ship enforced or not at all.
 
@@ -566,7 +577,7 @@ Full matrix: [error handling](../handbook/error-handling.md).
 
 ## 10. Acceptance Criteria
 
-**AC1**: Given a clean checkout, when `make verify` runs, then all four layer packages compile at
+**AC1**: Given a clean checkout, when `make verify` runs, then all four context packages compile at
 language level 24, every test tier passes, and JaCoCo reports ≥ 90% line and ≥ 90% branch.
 
 **AC1c**: Given a running API, when `GET /api/v3/api-docs.yaml` is called, then the document
@@ -579,7 +590,7 @@ proprietary field is byte-identical to its prior value** (F7).
 **AC6 — Coverage**: JaCoCo on merged Surefire and Failsafe data reports ≥ 90% line and
 ≥ 90% branch; the build **fails** below either.
 
-**AC9 — Architecture**: All 16 ArchUnit rules pass, none frozen, none allowlisted.
+**AC9 — Architecture**: All 22 ArchUnit rules pass, none frozen, none allowlisted.
 
 **AC9b — No file headers**: No `.java` outside generated sources contains a copyright or licence banner.
 

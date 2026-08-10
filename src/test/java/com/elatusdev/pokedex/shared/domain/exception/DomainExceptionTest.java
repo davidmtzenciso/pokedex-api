@@ -1,4 +1,4 @@
-package com.elatusdev.pokedex.domain.exception;
+package com.elatusdev.pokedex.shared.domain.exception;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

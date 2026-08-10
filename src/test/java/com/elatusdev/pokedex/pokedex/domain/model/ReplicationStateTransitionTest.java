@@ -1,11 +1,11 @@
 package com.elatusdev.pokedex.pokedex.domain.model;
 
-import static com.elatusdev.pokedex.domain.model.ReplicationState.CUSTOMIZED;
-import static com.elatusdev.pokedex.domain.model.ReplicationState.DRAFT;
-import static com.elatusdev.pokedex.domain.model.ReplicationState.FAILED;
-import static com.elatusdev.pokedex.domain.model.ReplicationState.PENDING;
-import static com.elatusdev.pokedex.domain.model.ReplicationState.STALE;
-import static com.elatusdev.pokedex.domain.model.ReplicationState.SYNCED;
+import static com.elatusdev.pokedex.pokedex.domain.model.ReplicationState.CUSTOMIZED;
+import static com.elatusdev.pokedex.pokedex.domain.model.ReplicationState.DRAFT;
+import static com.elatusdev.pokedex.pokedex.domain.model.ReplicationState.FAILED;
+import static com.elatusdev.pokedex.pokedex.domain.model.ReplicationState.PENDING;
+import static com.elatusdev.pokedex.pokedex.domain.model.ReplicationState.STALE;
+import static com.elatusdev.pokedex.pokedex.domain.model.ReplicationState.SYNCED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
