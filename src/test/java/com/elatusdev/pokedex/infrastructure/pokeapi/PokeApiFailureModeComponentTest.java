@@ -12,6 +12,7 @@ import com.elatusdev.pokedex.domain.exception.UpstreamTimeoutException;
 import com.elatusdev.pokedex.domain.exception.UpstreamUnavailableException;
 import com.elatusdev.pokedex.infrastructure.cache.InMemoryCachePort;
 import com.elatusdev.pokedex.domain.model.Pokemon;
+import com.elatusdev.pokedex.domain.port.CatalogPage;
 import com.elatusdev.pokedex.domain.vo.PokeApiId;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
@@ -70,7 +71,7 @@ class PokeApiFailureModeComponentTest {
     void should_map_a_real_recorded_payload_into_a_complete_row() {
         stubHappyPage();
 
-        List<Pokemon> rows = adapter.fetchPage(0, 10);
+        List<Pokemon> rows = adapter.fetchPage(0, 10).rows();
 
         assertThat(rows).hasSize(10);
         assertThat(rows.getFirst().replicated().category()).isPresent();
@@ -108,7 +109,7 @@ class PokeApiFailureModeComponentTest {
                          "evolution_chain":{"url":"https://pokeapi.co/api/v2/evolution-chain/1/"}}
                         """)));
 
-        assertThat(adapter.fetchPage(0, 10)).isEmpty();
+        assertThat(adapter.fetchPage(0, 10).rows()).isEmpty();
     }
 
     @Test
@@ -160,6 +161,6 @@ class PokeApiFailureModeComponentTest {
         stubHappyPage();
         upstream.stubFor(get(urlPathEqualTo("/pokemon/7")).willReturn(json("{}").withFixedDelay(1200)));
 
-        assertThat(adapter.fetchPage(0, 10)).hasSize(9);
+        assertThat(adapter.fetchPage(0, 10).rows()).hasSize(9);
     }
 }

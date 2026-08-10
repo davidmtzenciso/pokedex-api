@@ -14,6 +14,7 @@ import com.elatusdev.pokedex.domain.exception.InvalidPaginationException;
 import com.elatusdev.pokedex.domain.exception.UpstreamUnavailableException;
 import com.elatusdev.pokedex.domain.model.Pokemon;
 import com.elatusdev.pokedex.domain.model.ReplicatedFields;
+import com.elatusdev.pokedex.domain.port.CatalogPage;
 import com.elatusdev.pokedex.domain.port.PokemonCatalog;
 import com.elatusdev.pokedex.domain.port.PokemonRepository;
 import com.elatusdev.pokedex.domain.vo.Category;
@@ -54,8 +55,7 @@ class ListPokemonUseCaseTest {
 
     @Test
     void should_return_the_upstream_page_when_the_catalogue_answers() {
-        when(catalog.fetchPage(0, 10)).thenReturn(List.of(row("bulbasaur")));
-        when(catalog.totalCount()).thenReturn(1351);
+        when(catalog.fetchPage(0, 10)).thenReturn(new CatalogPage(List.of(row("bulbasaur")), 1351));
 
         PokemonPageResult result = useCase.list(0, 10);
 
@@ -66,15 +66,13 @@ class ListPokemonUseCaseTest {
         assertThat(result.totalElements()).isEqualTo(1351L);
         assertThat(result.stale()).isFalse();
         verify(catalog, times(1)).fetchPage(0, 10);
-        verify(catalog, times(1)).totalCount();
         verifyNoMoreInteractions(catalog);
         verifyNoInteractions(repository);
     }
 
     @Test
     void should_derive_the_total_page_count_from_the_size() {
-        when(catalog.fetchPage(0, 10)).thenReturn(List.of(row("bulbasaur")));
-        when(catalog.totalCount()).thenReturn(1351);
+        when(catalog.fetchPage(0, 10)).thenReturn(new CatalogPage(List.of(row("bulbasaur")), 1351));
 
         assertThat(useCase.list(0, 10).totalPages()).isEqualTo(136);
     }
@@ -99,8 +97,7 @@ class ListPokemonUseCaseTest {
 
     @Test
     void should_accept_the_maximum_size() {
-        when(catalog.fetchPage(0, 100)).thenReturn(List.of(row("bulbasaur")));
-        when(catalog.totalCount()).thenReturn(1351);
+        when(catalog.fetchPage(0, 100)).thenReturn(new CatalogPage(List.of(row("bulbasaur")), 1351));
 
         assertThat(useCase.list(0, 100).rows()).hasSize(1);
     }

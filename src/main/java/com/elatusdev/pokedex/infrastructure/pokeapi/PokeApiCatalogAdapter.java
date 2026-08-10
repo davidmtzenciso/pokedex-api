@@ -6,6 +6,7 @@ import com.elatusdev.pokedex.domain.exception.UpstreamUnavailableException;
 import com.elatusdev.pokedex.domain.model.EvolutionLink;
 import com.elatusdev.pokedex.domain.model.Pokemon;
 import com.elatusdev.pokedex.domain.port.CachePort;
+import com.elatusdev.pokedex.domain.port.CatalogPage;
 import com.elatusdev.pokedex.domain.port.PokemonCatalog;
 import com.elatusdev.pokedex.domain.vo.PokeApiId;
 import com.elatusdev.pokedex.domain.vo.PokemonName;
@@ -44,8 +45,9 @@ public class PokeApiCatalogAdapter implements PokemonCatalog {
     }
 
     @Override
-    public List<Pokemon> fetchPage(int page, int size) {
-        List<PokeApiNameRef> refs = fetchListing(page, size).results();
+    public CatalogPage fetchPage(int page, int size) {
+        PokeApiListResponse listing = fetchListing(page, size);
+        List<PokeApiNameRef> refs = listing.results();
         Semaphore gate = new Semaphore(properties.maxConcurrency());
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             List<CompletableFuture<Optional<Pokemon>>> pending = refs.stream()
@@ -54,13 +56,8 @@ public class PokeApiCatalogAdapter implements PokemonCatalog {
             List<Pokemon> rows =
                     pending.stream().map(CompletableFuture::join).flatMap(Optional::stream).toList();
             logFanOut(page, size, refs.size(), rows.size());
-            return rows;
+            return new CatalogPage(rows, listing.count());
         }
-    }
-
-    @Override
-    public int totalCount() {
-        return fetchListing(0, 1).count();
     }
 
     @Override

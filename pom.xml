@@ -189,7 +189,11 @@
               <apiPackage>com.elatusdev.pokedex.web.api</apiPackage>
               <modelPackage>com.elatusdev.pokedex.web.dto</modelPackage>
               <modelNameSuffix>DTO</modelNameSuffix>
-              <generateSupportingFiles>false</generateSupportingFiles>
+              <!-- default interface methods return 501 for operations a stream has not
+                   implemented yet, which is what lets three streams share one contract.
+                   They need ApiUtil, so that one supporting file is generated and no other. -->
+              <generateSupportingFiles>true</generateSupportingFiles>
+              <supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
               <generateApiTests>false</generateApiTests>
               <generateModelTests>false</generateModelTests>
               <configOptions>
@@ -200,7 +204,6 @@
                 <useSpringBoot3>true</useSpringBoot3>
                 <openApiNullable>false</openApiNullable>
                 <useOptional>false</useOptional>
-                <skipDefaultInterface>true</skipDefaultInterface>
               </configOptions>
             </configuration>
           </execution>
