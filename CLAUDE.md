@@ -123,7 +123,7 @@ of `catalog`, `pokedex`, `identity`, `shared`.
 | Aggregates, value objects, policies, **domain** ports | `{context}/domain/{model,vo,policy,port,exception}` | `L2`, `N3`, `N5` |
 | **Technical** ports — `CachePort`, `ClockPort` | `shared/port` — outside `domain` | `L5` |
 | Use cases — one class per operation | `{context}/application/usecase` | `N1` |
-| JPA entities and Spring Data repositories | `pokedex/infrastructure/persistence` | `N3`, `N4`, `IO1` |
+| JPA entities and Spring Data repositories | `{context}/infrastructure/persistence` | `N3`, `N4`, `IO1` |
 | PokeAPI client | `catalog/infrastructure/pokeapi` | `IO2` |
 | Redis cache adapter | `catalog/infrastructure/cache` | `IO1` |
 | Token issuer, hasher, session store | `identity/infrastructure/security` | — |
@@ -133,6 +133,68 @@ of `catalog`, `pokedex`, `identity`, `shared`.
 | Generated `*Api` and `*DTO` | `target/generated-sources/…` — **never edited, never committed** | `OA1` |
 | Flyway migrations | `src/main/resources/db/migration` | Fails fast on checksum drift |
 | ArchUnit rules | `src/test/java/com/elatusdev/pokedex/architecture` | Itself |
+
+---
+
+## Naming
+
+**One concept has three representations, and the name tells you which one you are holding.**
+
+| Representation | Name | Lives in | Rule |
+|---|---|---|---|
+| Wire | `PokemonSummaryDTO` | `web/dto` — generated | `N6` |
+| Persistence | `PokemonDataModel` | `{context}/infrastructure/persistence/model` | `N4` |
+| **Domain** | `Pokemon` | `{context}/domain/model` | `N7` |
+
+**The domain type is the unsuffixed one, and that is the convention rather than an
+oversight.** `Pokemon` *is* the Pokémon; the other two are projections of it. A domain
+expert says "Pokémon", never "PokemonDomain" — the domain carries the ubiquitous language,
+and a technical suffix there both duplicates what `pokedex.domain.model` already says and
+signals that a projection leaked inward. `N7` fails the build on any `..domain..` class
+ending in `DTO`, `Dto`, `DataModel`, `Entity`, `Request`, or `Response`.
+
+### Suffixes that are required
+
+| Suffix | Means | Must live in | Rule |
+|---|---|---|---|
+| `*UseCase` | One application operation | `{context}/application/usecase` | `N1` |
+| `*Controller` | HTTP entry point implementing a generated `*Api` | `{context}/web/controller` | `N2`, `OA1` |
+| `*Repository` | A persistence **port** (interface) or its Spring Data interface | `{context}/domain/port` or `..infrastructure.persistence..` | `N3` |
+| `*DataModel` | A JPA entity | `..infrastructure.persistence.model..` | `N4` |
+| `*Exception` | A domain failure mode, extending `RuntimeException` | `{context}/domain/exception` | `N5` |
+| `*DTO` | A wire type, generated from the contract | `web/dto` | `N6` |
+| `*Adapter` | An implementation of a port | `..infrastructure..` | `N9` |
+| `*Port` | A **technical** port naming no domain type | `shared/port` | `L5` |
+
+### Ports and adapters
+
+A **port names a capability**; an **adapter names the technology** that meets it.
+
+```
+PokemonRepository            ← the port: what the domain needs
+JpaPokemonRepositoryAdapter  ← the adapter: how it is met
+```
+
+`N9` asserts all three halves of that: `..port..` holds only interfaces and **carrier
+records**, every `*Adapter` lives in `..infrastructure..`, and every `*Adapter` actually
+implements an interface from a port package. A class named `*Adapter` that adapts nothing is
+just a class in the infrastructure package.
+
+A carrier record is permitted because a port sometimes needs a type for its own return
+value — `CatalogPage(rows, totalCount)` exists so one upstream call answers both questions
+rather than two. What `N9` forbids is a **concrete class with behaviour** in a port package,
+which is an adapter that has not admitted it yet.
+
+### Names to avoid entirely
+
+`*Service`, `*Manager`, `*Helper`, `*Util`, `*Impl`, `*Info`, `*Data`. These are the names
+people reach for when they have not decided what a class **is**. `*Service` inside
+`..usecase..` is a build failure (`N5`) — it is the god object this structure exists to
+prevent. Elsewhere they are a review comment.
+
+`FooImpl` implementing `Foo` is the specific one worth naming: if there is exactly one
+implementation, the interface is not earning its keep; if there are several, `Impl` tells
+you nothing about which is which.
 
 ---
 
@@ -227,7 +289,7 @@ New code must clear all of these before a push:
 | Branch coverage | ≥ 90% | JaCoCo `check` — fails the build |
 | Mutation score — every `..domain..` | ≥ 85% | PIT, `make mutation` — deliberate, not in the commit loop |
 | Mutation score — every `..application..` | ≥ 75% | PIT |
-| ArchUnit rules | all 23 pass, none frozen | `mvn -B test -Dtest='*ArchitectureTest'` |
+| ArchUnit rules | all 26 pass, none frozen | `mvn -B test -Dtest='*ArchitectureTest'` |
 | Source hygiene | no file header, no Javadoc, no `// NOSONAR` | `scripts/check-source-hygiene.sh`, bound to `validate` |
 | Secrets | none | `gitleaks detect`, run locally |
 

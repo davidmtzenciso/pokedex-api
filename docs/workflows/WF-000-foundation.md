@@ -527,6 +527,9 @@ Secrets never live in `*.properties` (`java:S6437`, `docker:S6472`). The dev key
 | **N3** — Repository naming | `*Repository` port in `..domain.port..`; adapter in `..infrastructure.persistence..` | Yes | `NamingConventionArchitectureTest` |
 | **N4** — DataModel naming | `*DataModel` resides in `..infrastructure.persistence.model..` | Yes | `NamingConventionArchitectureTest` |
 | **N5** — Exception placement | Domain exceptions are `RuntimeException` subclasses in `..domain.exception..`; no `*Service` inside `usecase` | Yes | `NamingConventionArchitectureTest` |
+| **N6** — DTO naming | Every class in `..web.dto..` ends `DTO`, **and** no `*DTO` exists outside it | Yes | `NamingConventionArchitectureTest` |
+| **N7** — Domain names are unqualified | No class in `..domain..` ends `DTO`, `Dto`, `DataModel`, `Entity`, `Request`, or `Response` | Yes | `NamingConventionArchitectureTest` |
+| **N9** — Port and adapter naming | `..port..` holds only interfaces and carrier records; `*Adapter` lives in `..infrastructure..` and implements a port | Yes | `NamingConventionArchitectureTest` |
 | **IO1** — DB containment | `EntityManager`, `JdbcTemplate`, and `JpaRepository` appear only under `..infrastructure..` | Yes | `IoConfinementArchitectureTest` |
 | **IO2** — HTTP containment | `RestClient` appears only under `..infrastructure.pokeapi..` | Yes | `IoConfinementArchitectureTest` |
 | **IMF1** — Immutability | Every class in `..domain.vo..` is a `record` or has only final fields | Yes | `ImmutabilityArchitectureTest` |
@@ -591,7 +594,7 @@ proprietary field is byte-identical to its prior value** (F7).
 **AC6 — Coverage**: JaCoCo on merged Surefire and Failsafe data reports ≥ 90% line and
 ≥ 90% branch; the build **fails** below either.
 
-**AC9 — Architecture**: All 23 ArchUnit rules pass, none frozen, none allowlisted.
+**AC9 — Architecture**: All 26 ArchUnit rules pass, none frozen, none allowlisted.
 
 **AC9b — No file headers**: No `.java` outside generated sources contains a copyright or licence banner.
 
@@ -619,7 +622,7 @@ last tag.
 |---|:---:|---|
 | §4.4 | 0 | Every invariant carries a named test |
 | §4.7 | 0 | Every formula maps to a test or AC; every `PRE` violation has an error row |
-| §5 | 3 | Layer, naming, and contract rules promoted to ArchUnit L1–L4, N1–N5, OA1 |
+| §5 | 3 | Layer, naming, and contract rules promoted to ArchUnit L1–L5, N1–N9, OA1 |
 | §9 | 2 | File headers **forbidden** rather than mandated, and checked at `validate`; suppression ladder to a grep target in `make verify` |
 | §10 | 4 | Hosted-analyser gates (duplication, smells, hotspots) **deleted rather than restated** — nothing local enforces them |
 | §10 AC10 | 1 | "Verifies interactions" was unfalsifiable while `any()` was permitted — promoted to H25 and AC10b |

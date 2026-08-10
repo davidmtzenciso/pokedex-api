@@ -9,7 +9,7 @@ flowchart TD
     C["Component · Failsafe + Testcontainers<br/>~40 tests · tens of seconds<br/>Does it work against real infrastructure?"]
     I["Contract · WireMock<br/>~25 tests · seconds<br/>Do we handle what upstream actually sends?"]
     U["Unit · Surefire<br/>~250 tests · milliseconds<br/>Is the logic correct?"]
-    A["Architecture · ArchUnit<br/>23 rules · seconds<br/>Is the structure intact?"]
+    A["Architecture · ArchUnit<br/>26 rules · seconds<br/>Is the structure intact?"]
     E --> C --> I --> U
     A -.->|orthogonal| U
 ```

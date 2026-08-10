@@ -42,7 +42,7 @@ directory, and do not re-implement the domain.
 | JaCoCo 90/90, enforcer, PIT, Failsafe | Wired. PIT targets `com.elatusdev.pokedex.*.domain.*` and `*.application.*` |
 | `Makefile` | `verify`, `test`, `arch`, `mutation`, `contract-check`, `e2e`, `up`, `down`, `keys` |
 | **WU-000-C** | `Pokemon` + 7 child types, `ReplicatedFields`/`ProprietaryFields`, `ReplicationState`, `User`, `Role`, 15 VOs, 9 exceptions, 7 ports |
-| **WU-000-D** | 23 ArchUnit rules across 10 `*ArchitectureTest` classes, none frozen |
+| **WU-000-D** | 26 ArchUnit rules across 10 `*ArchitectureTest` classes, none frozen |
 | **WU-000-B** | `src/main/resources/openapi/pokedex-api.yaml`, generated `*Api` + `*DTO`, served verbatim |
 
 | Not yet present | Owning phase |
@@ -174,7 +174,7 @@ without it.
 
 | Order | Work unit | Delivers | Entry |
 |---|---|---|---|
-| 1 | [WU-000-D](../work-units/WU-000-D-architecture-tests.md) | 23 ArchUnit rules, none frozen | WU-000-A |
+| 1 | [WU-000-D](../work-units/WU-000-D-architecture-tests.md) | 26 ArchUnit rules, none frozen | WU-000-A |
 | 2 | [WU-000-C](../work-units/WU-000-C-domain-core.md) | Aggregates, state machine, **ports** | WU-000-A, IAR re-confirmed |
 | 3 | [WU-000-B](../work-units/WU-000-B-contract.md) | `pokedex-api.yaml`, generated `*Api` + `*DTO` | WU-000-A |
 
@@ -202,7 +202,7 @@ make mutation
 mvn -B generate-sources && ls target/generated-sources/openapi/**/api/
 ```
 
-- [ ] All 23 ArchUnit rules pass. **Each was proven against a deliberate violation** before being trusted
+- [ ] All 26 ArchUnit rules pass. **Each was proven against a deliberate violation** before being trusted
 - [ ] `L2` turns red when a domain class imports Spring — demonstrated, then reverted
 - [ ] Every invariant **testable at the domain tier** has a passing named test — I1, I8, I9 and I11 name a `*ComponentTest` in [WF-000 §4.4](../workflows/WF-000-foundation.md) and need infrastructure later phases build
 - [ ] Domain line coverage ≥ 95%; **mutation score ≥ 85% on `domain`**, every survivor fixed or justified as equivalent
