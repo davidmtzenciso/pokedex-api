@@ -6,7 +6,7 @@
 | **Parent** | [WF-999 Delivery](../workflows/WF-999-delivery.md) |
 | **Objective contribution** | One command brings the stack up with real data |
 | **Estimate** | M |
-| **Status** | not started |
+| **Status** | done |
 
 ## Objective
 

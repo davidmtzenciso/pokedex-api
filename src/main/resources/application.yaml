@@ -69,6 +69,11 @@ pokedex:
     audience: ${JWT_AUDIENCE:pokedex-api}
     access-ttl: ${JWT_ACCESS_TTL:PT15M}
     refresh-ttl: ${JWT_REFRESH_TTL:P7D}
+  seed:
+    # off by default: 151 ids is roughly 450 calls against a fair-use upstream (IA10), which
+    # is not something a test run or a local `mvn spring-boot:run` should do by accident.
+    # compose turns it on, because a demo of an empty catalogue demonstrates nothing.
+    upstream-on-startup: ${POKEDEX_SEED_UPSTREAM:false}
   security:
     # an explicit origin allow-list; never '*'
     cors-allowed-origins: ${POKEDEX_CORS_ORIGINS:http://localhost:3000,http://localhost:5173}
