@@ -36,13 +36,14 @@ class SchemaMigrationComponentTest {
     }
 
     @Test
-    void should_record_a_successful_v1_when_flyway_applies_from_empty() {
+    void should_record_every_migration_as_successful_when_flyway_applies_from_empty() {
         List<String> applied = jdbc.queryForList(
                 "SELECT version FROM flyway_schema_history WHERE success = true ORDER BY installed_rank",
                 String.class);
 
-        assertThat(applied).containsExactly("1");
+        assertThat(applied).containsExactly("1", "2");
     }
+
 
     @Test
     void should_create_the_nine_tables_when_the_migration_applies() {

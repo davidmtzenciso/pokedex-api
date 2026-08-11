@@ -54,6 +54,9 @@ services:
       POKEDEX_DB_USER: pokedex
       POKEDEX_DB_PASSWORD: ${POSTGRES_PASSWORD:-pokedex-dev-only}
       POKEDEX_REDIS_HOST: redis
+      # replicate the first generation on first boot, so the stack comes up with something
+      # to browse. Idempotent: a restart against an existing volume skips it.
+      POKEDEX_SEED_UPSTREAM: "true"
       # dev-only, and the keystore it opens is generated fresh inside the container on every
       # start. Production mounts a real keystore and supplies this from a secret store.
       JWT_KEYSTORE_PASSWORD: ${JWT_KEYSTORE_PASSWORD:-changeit-dev-only}
